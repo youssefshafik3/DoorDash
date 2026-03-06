@@ -3,6 +3,9 @@ package game.engine;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import game.engine.monsters.Monster;
+import game.engine.Role;
+
 public class Game {
 	private Board board;
 	private	ArrayList<Monster> allMonsters;
@@ -15,7 +18,7 @@ public class Game {
 		board = new Board(DataLoader.readCards());
 		allMonsters = DataLoader.readMonsters();
 		player = selectRandomMonsterByRole(playerRole);
-		Role opponentRole =	(playerRole==SCARER)? LAUGHER:SCARER;
+		Role opponentRole =	(playerRole == Role.SCARER)? Role.LAUGHER:Role.SCARER;
 		opponent = selectRandomMonsterByRole(opponentRole);
 		setCurrent(player);
 	}
@@ -51,5 +54,6 @@ public class Game {
 			indexPlayer = (int)(Math.random()*sizeMonster);
 			x = allMonsters.get(indexPlayer);
 		}
+		return x;
 	}
 }

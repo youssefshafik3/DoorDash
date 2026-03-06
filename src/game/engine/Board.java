@@ -2,6 +2,10 @@ package game.engine;
 
 import java.util.ArrayList;
 
+import game.engine.cards.Card;
+import game.engine.cells.Cell;
+import game.engine.monsters.Monster;
+
 public class Board {
 	private Cell[][] boardCells;
 	private	ArrayList<Monster> stationedMonsters;
@@ -26,7 +30,7 @@ public class Board {
 		return originalCards;
 	}
 	 public Board(ArrayList<Card> readCards) {
-	        boardCells = new Cell[BOARD_ROWS][BOARD_COLS];
+	        boardCells = new Cell[Constants.BOARD_ROWS][Constants.BOARD_COLS];
 	        stationedMonsters = new ArrayList<>();
 	        cards = new ArrayList<>();
 	        originalCards = readCards;
