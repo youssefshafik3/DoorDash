@@ -1,8 +1,10 @@
 package game.engine.cells;
 
+import game.engine.interfaces.CanisterModifier;
 import game.engine.monsters.Monster;
+import game.engine.interfaces.*;
 
-public class Cell {
+public class Cell implements CanisterModifier {
 private String name;
 private Monster monster;
 
@@ -27,5 +29,11 @@ this.monster=monster;
 		// TODO Auto-generated method stub
 
 	}
+	@Override
+	public void modifyCanister(Monster monster) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 
 }
