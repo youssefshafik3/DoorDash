@@ -2,6 +2,7 @@ package game.engine;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import game.engine.dataloader.DataLoader;
 import game.engine.monsters.Monster;
@@ -48,11 +49,12 @@ public class Game {
 		int sizeMonster = allMonsters.size();
 		ArrayList<Monster> m = new ArrayList<>();
 		for (int i =0 ; i < sizeMonster ; i++){
-			if(role == allMonsters.get(i).getOriginalRole()){
+			if(role == allMonsters.get(i).getRole()){
 				m.add(allMonsters.get(i));
 			}
 		}
-		int indexRandPlayer = (int)(Math.random()*m.size());
+		Random r = new Random();
+		int indexRandPlayer = r.nextInt(m.size());
 		return m.get(indexRandPlayer);
 	}
 }

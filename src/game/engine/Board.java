@@ -26,8 +26,8 @@ public class Board {
 	public Cell[][] getBoardCells() {
 		return boardCells;
 	}
-	public ArrayList<Card> getOriginalCards() {
-		return originalCards;
+	public static ArrayList<Card> getOriginalCards() {
+		return Board.originalCards;
 	}
 	 public Board(ArrayList<Card> readCards) {
 	        boardCells = new Cell[Constants.BOARD_ROWS][Constants.BOARD_COLS];
