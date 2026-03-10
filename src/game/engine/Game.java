@@ -44,17 +44,15 @@ public class Game {
 	public Monster getOpponent() {
 		return opponent;
 	}
-	
-	
-	
 	private Monster selectRandomMonsterByRole(Role role){
 		int sizeMonster = allMonsters.size();
-		int indexPlayer = (int)(Math.random()*sizeMonster);
-		Monster x = allMonsters.get(indexPlayer);
-		while (x.getOriginalRole()!= role){
-			indexPlayer = (int)(Math.random()*sizeMonster);
-			x = allMonsters.get(indexPlayer);
+		ArrayList<Monster> m = new ArrayList<>();
+		for (int i =0 ; i < sizeMonster ; i++){
+			if(role == allMonsters.get(i).getOriginalRole()){
+				m.add(allMonsters.get(i));
+			}
 		}
-		return x;
+		int indexRandPlayer = (int)(Math.random()*m.size());
+		return m.get(indexRandPlayer);
 	}
 }
