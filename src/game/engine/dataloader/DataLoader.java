@@ -76,7 +76,6 @@ public class DataLoader {
 		      int counter = 0;
 		      while ((line = br.readLine()) != null){
 		    	  counter++;
-		    	  line = br.readLine();
 		    	  String[] cardValues = line.split(",");
 		    	  String name = cardValues[0];
 		    	  if (counter<=50){
@@ -109,23 +108,23 @@ public class DataLoader {
 			    	String type = cardValues[0];
 			    	String name = cardValues[1];
 		    		String description = cardValues[2];
-		    		Role originalRole = Role.valueOf(cardValues[3]);
+		    		Role role = Role.valueOf(cardValues[3]);
 		    		int energy = Integer.parseInt(cardValues[4]);
 		    		switch(type){
 		    			case("DYNAMO"):
-		    				Dynamo dm = new Dynamo(name,description,originalRole,energy);
+		    				Dynamo dm = new Dynamo(name,description,role,energy);
 		    				monsters.add(dm);
 		    				break;
 		    			case("DASHER"):
-		    				Dasher dsh = new Dasher(name,description,originalRole,energy);
+		    				Dasher dsh = new Dasher(name,description,role,energy);
 		    				monsters.add(dsh);
 		    				break;
 		    			case("SCHEMER"):
-		    				Schemer sch = new Schemer(name,description,originalRole,energy);
+		    				Schemer sch = new Schemer(name,description,role,energy);
 		    				monsters.add(sch);
 		    				break;
 		    			case("MULTITASKER"):
-		    				MultiTasker multi = new MultiTasker(name,description,originalRole,energy);
+		    				MultiTasker multi = new MultiTasker(name,description,role,energy);
 		    				monsters.add(multi);
 		    				break;
 		    			default:

@@ -12,7 +12,7 @@ public class InvalidCSVFormat extends IOException {
 		 setInputLine(inputLine);
 	 }
 	 public InvalidCSVFormat(String message, String inputLine) {
-		 super(message + inputLine);
+		 super(message);
 		 setInputLine(inputLine);
 	 }
 	 
