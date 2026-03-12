@@ -3,9 +3,6 @@ package game.engine.monsters;
 import game.engine.Constants;
 import game.engine.Role;
 
-
-
-
 public abstract class Monster implements  Comparable<Monster> {
 	
 	private String name;
@@ -18,19 +15,16 @@ public abstract class Monster implements  Comparable<Monster> {
 	private boolean shielded;
 	private int confusionTurns;
 	
-	
-	public Monster(String name, String description, Role originalRole,
-			int energy) {
-		
+	public Monster(String name, String description, Role originalRole, int energy) {
 		this.name = name;
 		this.description = description;
 		this.originalRole = originalRole;
-		this.role=originalRole;
+		this.role = originalRole;
 		this.energy = energy;
-		this.position=0;
-		this.confusionTurns=0;
-		this.frozen=false;
-		this.shielded=false;
+		this.position = 0;
+		this.confusionTurns = 0;
+		this.frozen = false;
+		this.shielded = false;
 	}
 	
 	public int compareTo(Monster o){
@@ -97,8 +91,5 @@ public abstract class Monster implements  Comparable<Monster> {
 	public Role getOriginalRole() {
 		return originalRole;
 	}
-	
-	
-	
 
 }

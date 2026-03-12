@@ -7,6 +7,7 @@ public class InvalidMoveException extends GameActionException {
 	 public InvalidMoveException() {
 		 super(MSG);
 	 }
+	 
 	 public InvalidMoveException(String message) {
 		 super(message);
 	 }

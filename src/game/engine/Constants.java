@@ -26,10 +26,6 @@ public final class Constants {
     public static final int SLIP_PENALTY=100;
     
     //Power constants:
-    public static final int POWERUP_COST=500;
-    
-    
-    
-    
+    public static final int POWERUP_COST=500;  
    
 }
