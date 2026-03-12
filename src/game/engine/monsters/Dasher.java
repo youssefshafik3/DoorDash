@@ -6,8 +6,8 @@ public class Dasher extends Monster {
 	
 	private int momentumTurns;
 	
-	public Dasher(String name, String description, Role originalRole, int energy) {
-		super(name, description, originalRole, energy);
+	public Dasher(String name, String description, Role role, int energy) {
+		super(name, description, role, energy);
 		this.momentumTurns=0;
 		
 	}

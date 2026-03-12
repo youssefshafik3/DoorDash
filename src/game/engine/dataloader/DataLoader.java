@@ -53,7 +53,7 @@ public class DataLoader {
 		    		break;
 		    		
 		    	case ("ENERGYSTEAL"):
-		    		int  energy = Integer.parseInt(cardValues[4]);
+		    		int energy = Integer.parseInt(cardValues[4]);
 	    			EnergyStealCard esc = new EnergyStealCard(name,description,rarity,energy);
 	    			cards.add(esc);
 	    			break;
@@ -84,23 +84,23 @@ public class DataLoader {
 		      int counter = 0;
 		      while ((line = br.readLine()) != null) {
 		    	  counter++;
-		    	  String[] cardValues = line.split(",");
-		    	  String name = cardValues[0];
+		    	  String[] cellValues = line.split(",");
+		    	  String name = cellValues[0];
 		    	  
 		    	  if (counter<=50) {
-		    		  Role role = Role.valueOf(cardValues[1]);
-		    		  int energy = Integer.parseInt(cardValues[2]);
+		    		  Role role = Role.valueOf(cellValues[1]);
+		    		  int energy = Integer.parseInt(cellValues[2]);
 		    		  DoorCell dc = new DoorCell(name, role , energy);
 		    		  cells.add(dc);
 		    	  }
 		    	  else {
-			    	  int effect = Integer.parseInt(cardValues[1]);
+			    	  int effect = Integer.parseInt(cellValues[1]);
 			    	  if (effect>0) {
 			    		  ConveyorBelt cb = new ConveyorBelt(name, effect);
 			    		  cells.add(cb);
 			    	  }
 			    	  else {
-			    		  ContaminationSock cs = new ContaminationSock(name,effect);
+			    		  ContaminationSock cs = new ContaminationSock(name, effect);
 			    		  cells.add(cs);
 			    	  }
 		    	  }
@@ -114,12 +114,12 @@ public class DataLoader {
 		 try (BufferedReader br = new BufferedReader(new FileReader(MONSTERS_FILE_NAME))) {
 		      String line;
 		      while ((line = br.readLine()) != null) {
-		    	  	String[] cardValues = line.split(",");
-			    	String type = cardValues[0];
-			    	String name = cardValues[1];
-		    		String description = cardValues[2];
-		    		Role role = Role.valueOf(cardValues[3]);
-		    		int energy = Integer.parseInt(cardValues[4]);
+		    	  	String[] monsterValues = line.split(",");
+			    	String type = monsterValues[0];
+			    	String name = monsterValues[1];
+		    		String description = monsterValues[2];
+		    		Role role = Role.valueOf(monsterValues[3]);
+		    		int energy = Integer.parseInt(monsterValues[4]);
 		    		
 		    		switch(type) {
 		    		
