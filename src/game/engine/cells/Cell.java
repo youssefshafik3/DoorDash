@@ -14,8 +14,6 @@ public class Cell {
 	this.monster=null;
 	}
 
-public Cell() { 	
-	}
 
 public String getName() {
 	return this.name;	
