@@ -7,6 +7,7 @@ public class InvalidTurnException extends GameActionException {
 	public InvalidTurnException() {
 		super(MSG);
 	}
+	
 	public InvalidTurnException(String message) {
 		super(message);
 	}

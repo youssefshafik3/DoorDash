@@ -7,14 +7,16 @@ import game.engine.cells.Cell;
 import game.engine.monsters.Monster;
 
 public class Board {
+	
 	private Cell[][] boardCells;
 	private static	ArrayList<Monster> stationedMonsters;
 	private	static ArrayList<Card> originalCards;
 	public static ArrayList<Card> cards;
+	
 	public static ArrayList<Monster> getStationedMonsters() {
 		return stationedMonsters;
 	}
-	public static void setStationedMonsters( ArrayList<Monster> stationedMonsters) {
+	public static void setStationedMonsters(ArrayList<Monster> stationedMonsters) {
 		Board.stationedMonsters = stationedMonsters;
 	}
 	public static ArrayList<Card> getCards() {
@@ -34,6 +36,6 @@ public class Board {
 	        stationedMonsters = new ArrayList<>();
 	        cards = new ArrayList<>();
 	        originalCards = readCards;
-	    }
-	}
+	 }
+}
 

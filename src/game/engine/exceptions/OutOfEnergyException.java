@@ -7,6 +7,7 @@ public class OutOfEnergyException extends GameActionException {
 	public OutOfEnergyException() {
 		super(MSG);
 	}
+	
 	public OutOfEnergyException(String message) {
 		super(message);
 	}

@@ -9,12 +9,12 @@ import game.engine.monsters.Monster;
 import game.engine.Role;
 
 public class Game {
+	
 	private Board board;
 	private	ArrayList<Monster> allMonsters;
 	private	Monster player;
 	private	Monster opponent;
 	private	Monster current;
-	
 	
 	public Game (Role playerRole) throws IOException{
 		board = new Board(DataLoader.readCards());
@@ -24,8 +24,6 @@ public class Game {
 		opponent = selectRandomMonsterByRole(opponentRole);
 		setCurrent(player);
 	}
-	
-	
 	
 	public Monster getCurrent() {
 		return current;
