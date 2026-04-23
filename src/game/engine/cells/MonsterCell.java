@@ -1,18 +1,17 @@
 package game.engine.cells;
 
-import game.engine.monsters.Monster;
+import game.engine.monsters.*;
 
 public class MonsterCell extends Cell {
-	
 	private Monster cellMonster;
-	
+
 	public MonsterCell(String name, Monster cellMonster) {
 		super(name);
-		this.cellMonster=cellMonster;
+		this.cellMonster = cellMonster;
 	}
-	
+
 	public Monster getCellMonster() {
-		return this.cellMonster;	
+		return cellMonster;
 	}
 
 }

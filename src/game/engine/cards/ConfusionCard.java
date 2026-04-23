@@ -1,7 +1,6 @@
 package game.engine.cards;
 
 public class ConfusionCard extends Card {
-	
 	private int duration;
 	
 	public ConfusionCard(String name, String description, int rarity, int duration) {
