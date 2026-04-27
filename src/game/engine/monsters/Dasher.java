@@ -10,6 +10,11 @@ public class Dasher extends Monster {
 		this.momentumTurns = 0;
 	}
 	
+	@Override
+    public void executePowerupEffect(Monster opponentMonster) {
+        this.setMomentumTurns(3);
+    }
+	
 	public int getMomentumTurns() {
 		return momentumTurns;
 	}
