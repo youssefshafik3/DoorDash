@@ -55,7 +55,7 @@ public class Board {
 			col = (index%10);
 		else
 			col = (9-(index%10));
-		return new int[] {row,col};
+		return new int[]{row,col};
 	}
 	private Cell getCell(int index) {
 		int row = this.indexToRowCol(index)[0];
@@ -68,31 +68,41 @@ public class Board {
 		this.boardCells[row][col] = cell;
 	}
 	public void initializeBoard(ArrayList<Cell>specialCells) {
+		
 		int j = 0;
 		for(int i=0;i<100;i++) {
 			if(i%2 != 0) {
 				this.setCell(i,specialCells.get(j));
 				j++;
 			}
-			else {
+			else
 				this.setCell(i,new Cell(""));
 			}
-		}
+		
 		for(int i=0;i<Constants.CARD_CELL_INDICES.length;i++) {
 			int index = Constants.CARD_CELL_INDICES[i];
-			this.setCell(index,specialCells.get(50+i));
+			this.setCell(index,new CardCell(originalCards.get(i).getName()));
 		}
 		for(int i=0;i<Constants.MONSTER_CELL_INDICES.length;i++) {
 			int index = Constants.MONSTER_CELL_INDICES[i];
-			this.setCell(index, specialCells.get(70+i));
+			this.setCell(index,new MonsterCell("",(stationedMonsters.get(i))));
 		}
 		for(int i=0;i<Constants.CONVEYOR_CELL_INDICES.length;i++) {
-			int index = Constants.CONVEYOR_CELL_INDICES[i];
-			this.setCell(index, specialCells.get(60+i));
+			int index=0;
+			if (specialCells.get(50+i) instanceof ConveyorBelt)
+			index = Constants.CONVEYOR_CELL_INDICES[i];
+			this.setCell(index, specialCells.get(50+i));
 		}
 		for(int i=0;i<Constants.SOCK_CELL_INDICES.length;i++) {
-			int index = Constants.SOCK_CELL_INDICES[i];
-			this.setCell(index,specialCells.get(i+65));
+			int index = 0;
+			if(specialCells.get(50+i) instanceof ContaminationSock)
+			index = Constants.SOCK_CELL_INDICES[i];
+			this.setCell(index,specialCells.get(50+i));
+		}
+		for(int i=0;i<Constants.MONSTER_CELL_INDICES.length;i++) {
+		int index=Constants.MONSTER_CELL_INDICES[i];
+		MonsterCell m=(MonsterCell) getCell(index);
+		m.setMonster(stationedMonsters.get(index));
 		}
 		
 	}
@@ -117,18 +127,19 @@ public class Board {
 	}
 	public void moveMonster(Monster currentMonster,int roll,Monster opponentMonster) throws InvalidMoveException{
 		int oldPos = currentMonster.getPosition();
-		int newPos = (oldPos+roll)%100;
+		int newPos=(currentMonster.getPosition()+roll)%100;
 		Cell newCell = getCell(newPos);
+		currentMonster.setPosition(newPos);
 		newCell.onLand(currentMonster,opponentMonster);
 		if(currentMonster.getPosition()==opponentMonster.getPosition()) {
 			currentMonster.setPosition(oldPos);
-			throw new InvalidMoveException();
-			}
+			throw new InvalidMoveException();}
+				
 		if(currentMonster.getConfusionTurns()>0)
 			currentMonster.setConfusionTurns(currentMonster.getConfusionTurns()-1);
-		if(opponentMonster.getConfusionTurns()>0)
-			opponentMonster.setConfusionTurns(opponentMonster.getConfusionTurns()-1);
+		
 		updateMonsterPositions(currentMonster,opponentMonster);
+		
 	}
 	private void updateMonsterPositions(Monster player,Monster opponent) {
 		for(int i=0;i<100;i++)
