@@ -75,7 +75,8 @@ public class Board {
 		for(int i=0;i<specialCellsSize;i++) {
 			Cell currentCell = specialCells.get(i);
 			if (currentCell instanceof DoorCell) {
-				setCell(doorOddIndex, currentCell);
+				DoorCell door = (DoorCell) currentCell;
+				setCell(doorOddIndex, door);
 				doorOddIndex+=2;
 			}
 			else if (currentCell instanceof ConveyorBelt) {
@@ -84,7 +85,7 @@ public class Board {
 				beltIndex++;
 			}
 			else {
-				ContaminationSock sock = (ContaminationSock) specialCells.get(i);
+				ContaminationSock sock = (ContaminationSock) currentCell;
 				setCell(Constants.SOCK_CELL_INDICES[sockIndex], sock);
 				sockIndex++;
 			}	
