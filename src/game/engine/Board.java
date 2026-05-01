@@ -118,7 +118,7 @@ public class Board {
 		int oldPos=currentMonster.getPosition();
 		int newPos=(oldPos+roll)%100;
 		Cell newCell=getCell(newPos);
-		newCell.onland(currentMonster,opponentMonster);
+		newCell.onLand(currentMonster,opponentMonster);
 		if(currentMonster.getPosition()==opponentMonster.getPosition()) {
 			currentMonster.setPosition(oldPos);
 			throw new InvalidMoveException();}
