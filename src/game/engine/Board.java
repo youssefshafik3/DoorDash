@@ -67,43 +67,49 @@ public class Board {
 		int col = this.indexToRowCol(index)[1];
 		this.boardCells[row][col] = cell;
 	}
-	public void initializeBoard(ArrayList<Cell>specialCells) {
-		
-		int j = 0;
-		for(int i=0;i<100;i++) {
-			if(i%2 != 0) {
-				this.setCell(i,specialCells.get(j));
-				j++;
+	public void initializeBoard(ArrayList<Cell> specialCells) {
+		int specialCellsSize = specialCells.size();
+		int doorOddIndex = 1;
+		int beltIndex = 0;
+		int sockIndex = 0;
+		for(int i=0;i<specialCellsSize;i++) {
+			Cell currentCell = specialCells.get(i);
+			if (currentCell instanceof DoorCell) {
+				setCell(doorOddIndex, currentCell);
+				doorOddIndex+=2;
 			}
-			else
-				this.setCell(i,new Cell(""));
+			else if (currentCell instanceof ConveyorBelt) {
+				ConveyorBelt belt = (ConveyorBelt) currentCell;
+				setCell(Constants.CONVEYOR_CELL_INDICES[beltIndex], belt);
+				beltIndex++;
 			}
+			else {
+				ContaminationSock sock = (ContaminationSock) specialCells.get(i);
+				setCell(Constants.SOCK_CELL_INDICES[sockIndex], sock);
+				sockIndex++;
+			}	
+			
+		}
+		int stationedMonstersSize = stationedMonsters.size();
+		int monsterIndex = 0;
+		for (int i=0; i<stationedMonstersSize;i++) {
+			Monster currentMonster = stationedMonsters.get(i);
+			MonsterCell currentMonsterCell = new MonsterCell(currentMonster.getName(),currentMonster);
+			setCell(Constants.MONSTER_CELL_INDICES[monsterIndex], currentMonsterCell);
+			currentMonster.setPosition(Constants.MONSTER_CELL_INDICES[monsterIndex]);
+			monsterIndex++;
+		}
+		int cardCellIndicesSize = Constants.CARD_CELL_INDICES.length;
+		for (int i=0; i<cardCellIndicesSize; i++) {
+			CardCell currentCardCell = new CardCell("Card Cell");
+			setCell(Constants.CARD_CELL_INDICES[i], currentCardCell);
+		}
+		for (int i=0; i<100; i+=2) {
+			Cell currentCell = getCell(i);
+			if (currentCell == null)
+				setCell (i, new Cell ("Normal Cell"));
+		}
 		
-		for(int i=0;i<Constants.CARD_CELL_INDICES.length;i++) {
-			int index = Constants.CARD_CELL_INDICES[i];
-			this.setCell(index,new CardCell(originalCards.get(i).getName()));
-		}
-		for(int i=0;i<Constants.MONSTER_CELL_INDICES.length;i++) {
-			int index = Constants.MONSTER_CELL_INDICES[i];
-			this.setCell(index,new MonsterCell("",(stationedMonsters.get(i))));
-		}
-		for(int i=0;i<Constants.CONVEYOR_CELL_INDICES.length;i++) {
-			int index=0;
-			if (specialCells.get(50+i) instanceof ConveyorBelt)
-			index = Constants.CONVEYOR_CELL_INDICES[i];
-			this.setCell(index, specialCells.get(50+i));
-		}
-		for(int i=0;i<Constants.SOCK_CELL_INDICES.length;i++) {
-			int index = 0;
-			if(specialCells.get(50+i) instanceof ContaminationSock)
-			index = Constants.SOCK_CELL_INDICES[i];
-			this.setCell(index,specialCells.get(50+i));
-		}
-		for(int i=0;i<Constants.MONSTER_CELL_INDICES.length;i++) {
-		int index=Constants.MONSTER_CELL_INDICES[i];
-		MonsterCell m=(MonsterCell) getCell(index);
-		m.setMonster(stationedMonsters.get(index));
-		}
 		
 	}
 		
