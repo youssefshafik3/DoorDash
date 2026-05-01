@@ -24,10 +24,9 @@ public class Game {
 		this.player = selectRandomMonsterByRole(playerRole);
 		this.opponent = selectRandomMonsterByRole(playerRole == Role.SCARER ? Role.LAUGHER : Role.SCARER);
 		this.current = player;
-		ArrayList<Monster> stationedMonsters = (ArrayList<Monster>) allMonsters.clone();
-		stationedMonsters.remove(player);
-		stationedMonsters.remove(opponent);
-		Board.setStationedMonsters(stationedMonsters);
+		allMonsters.remove(player);
+		allMonsters.remove(opponent);
+		Board.setStationedMonsters(allMonsters);
 		board.initializeBoard(DataLoader.readCells());
 	}
 	
@@ -75,8 +74,9 @@ public class Game {
 	
 	public void usePowerup() throws OutOfEnergyException {
 		Monster currentOpponent = getCurrentOpponent();
-		if (current.getEnergy() >= Constants.POWERUP_COST)
+		if (current.getEnergy() >= Constants.POWERUP_COST) {
 			current.executePowerupEffect(currentOpponent);
+			current.setEnergy(current.getEnergy()-500);}
 		else
 			throw new OutOfEnergyException();
 	}

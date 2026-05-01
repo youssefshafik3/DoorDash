@@ -1,5 +1,6 @@
 package game.engine.cells;
 
+import game.engine.Board;
 import game.engine.Role;
 import game.engine.interfaces.CanisterModifier;
 import game.engine.monsters.Monster;
@@ -33,17 +34,30 @@ public class DoorCell extends Cell implements CanisterModifier {
 	}
 	@Override
 	public void onLand(Monster landingMonster, Monster opponentMonster) {
-	    super.onLand(landingMonster, opponentMonster);
+		super.onLand(landingMonster, opponentMonster);
+		if (!this.isActivated()) {
+			boolean f=(landingMonster.getRole()!=this.getRole() && landingMonster.isShielded()==true);
+			this.modifyCanisterEnergy(landingMonster,this.getEnergy());
+			if  (! f) {
+	        for(int i=0;i<Board.getStationedMonsters().size();i++) {
+				if(Board.getStationedMonsters().get(i).getRole()==landingMonster.getRole())
+					this.modifyCanisterEnergy(Board.getStationedMonsters().get(i),this.getEnergy());
+			}
+	        
+	        }
+		}
 	    
-	    if (!this.isActivated()) {
-	        int value = (landingMonster.getRole() == this.role) ? this.energy : (this.energy / 10);
-	        this.modifyCanisterEnergy(landingMonster, value);
+	    
 	    }
-	}
 	
 	@Override
 	public void modifyCanisterEnergy(Monster monster, int canisterValue) {
-	    monster.alterEnergy(canisterValue);
-	    this.setActivated(true);
+		int n=monster.getEnergy();
+		 canisterValue = (monster.getRole() == this.getRole()) ? canisterValue : (-canisterValue);
+		monster.alterEnergy(canisterValue);
+		if(n!=monster.getEnergy())
+		this.setActivated(true);	
+	    }
+	
 	}
-}
+
