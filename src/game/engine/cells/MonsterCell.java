@@ -18,16 +18,12 @@ public class MonsterCell extends Cell {
 	    super.onLand(landingMonster, opponentMonster);
 	    if (landingMonster.getRole() == cellMonster.getRole()) {
 	        cellMonster.executePowerupEffect(landingMonster);
-	    } else {
-	        if (landingMonster.getEnergy() > cellMonster.getEnergy()) {
-	            int stolenAmount = cellMonster.getEnergy();
-	            cellMonster.alterEnergy(-stolenAmount);
-	            landingMonster.alterEnergy(stolenAmount);
-	        } else if (landingMonster.getEnergy() < cellMonster.getEnergy()) {
-	            int currentEnergy = landingMonster.getEnergy();
-	            landingMonster.setEnergy(opponentMonster.getEnergy());
-	            opponentMonster.setEnergy(currentEnergy);
-	        }
+	    } 
+	    else if (landingMonster.getEnergy() > cellMonster.getEnergy()) {
+	        int landingEnergy = landingMonster.getEnergy();
+	        int cellMonsterEnergy = cellMonster.getEnergy();
+	        landingMonster.setEnergy(cellMonsterEnergy);
+	        cellMonster.setEnergy(landingEnergy);
 	    }
 	}
 }
