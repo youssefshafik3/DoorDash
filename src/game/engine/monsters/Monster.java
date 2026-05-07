@@ -14,7 +14,6 @@ public abstract class Monster implements Comparable<Monster> {
 	private boolean shielded;
 	private int confusionTurns;
 	
-	
 	public Monster(String name, String description, Role originalRole, int energy) {
 		super();
 		this.name = name;
@@ -26,36 +25,6 @@ public abstract class Monster implements Comparable<Monster> {
 		this.frozen = false;
 		this.shielded = false;
 		this.confusionTurns = 0;
-	}
-	public abstract void executePowerupEffect(Monster opponentMonster);
-	
-	
-	public boolean isConfused(){
-		return this.getConfusionTurns()!=0;
-	}
-	
-	
-	public  void move(int distance){
-		this.setPosition(this.getPosition()+distance);
-	}
-	
-	public final void alterEnergy(int energy){
-		if(isShielded() && energy<0){
-			this.setShielded(false);
-			
-		}
-		else {
-			this.setEnergy(energy +this.getEnergy());
-		}
-	}
-	public void decrementConfusion() {
-	    if (this.getConfusionTurns() > 0) {
-	        this.setConfusionTurns(this.getConfusionTurns() - 1);
-	        if (this.getConfusionTurns() == 0) {
-	          
-	            this.setRole(this.getOriginalRole()); 
-	        }
-	    }
 	}
 
 	public String getName() {
@@ -116,6 +85,35 @@ public abstract class Monster implements Comparable<Monster> {
 	
 	public void setConfusionTurns(int confusionTurns) {
 		this.confusionTurns = confusionTurns;
+	}
+
+	public abstract void executePowerupEffect(Monster opponentMonster);
+	
+	public boolean isConfused() {
+		return confusionTurns > 0;
+	}
+	
+	public void move(int distance) {
+		this.setPosition(this.getPosition() + distance);
+	}
+	
+	public final void alterEnergy(int energy) {
+		if (shielded && energy < 0) {
+			System.out.println(name + "'s shield blocked " + (-energy) + " damage!");
+			shielded = false; // Shield breaks after one use
+		}
+		
+		else 
+			this.setEnergy(this.getEnergy() + energy);	
+	}
+	
+	public void decrementConfusion() {
+		if (isConfused()) {
+			this.setConfusionTurns(this.getConfusionTurns() - 1);
+			
+			if(!isConfused())
+				this.setRole(originalRole);
+		}
 	}
 
 	@Override

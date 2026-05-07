@@ -10,21 +10,6 @@ public class Dasher extends Monster {
 		this.momentumTurns = 0;
 	}
 	
-	@Override
-    public void executePowerupEffect(Monster opponentMonster) {
-        this.setMomentumTurns(3);
-    }
-	
-	@Override
-	public void move(int distance) {
-	    if (this.getMomentumTurns() > 0) {
-	        super.move(distance * 3);
-	        this.setMomentumTurns(this.getMomentumTurns() - 1);
-	    } else {
-	        super.move(distance * 2);
-	    }
-	}
-	
 	public int getMomentumTurns() {
 		return momentumTurns;
 	}
@@ -33,4 +18,24 @@ public class Dasher extends Monster {
 		this.momentumTurns = momentumTurns;
 	}
 
+	@Override
+	public void executePowerupEffect(Monster opponentMonster) {
+		this.setMomentumTurns(3);
+		System.out.println(getName() + " activated Momentum Rush! 3x speed for 3 turns!");
+	}
+	
+	@Override
+	public void move(int distance) {
+		if (momentumTurns > 0) {
+	        System.out.println(getName() + " using Momentum! (" + momentumTurns + " turns left)");
+	        momentumTurns--;
+	        distance *= 3;
+	    } 
+		
+		else 
+	        distance *= 2;
+	    
+	    super.move(distance);
+	}
+	
 }

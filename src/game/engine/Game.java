@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.Random;
 
 import game.engine.dataloader.DataLoader;
-import game.engine.exceptions.*;
+import game.engine.exceptions.InvalidMoveException;
+import game.engine.exceptions.OutOfEnergyException;
 import game.engine.monsters.*;
 
 public class Game {
@@ -24,8 +25,10 @@ public class Game {
 		this.player = selectRandomMonsterByRole(playerRole);
 		this.opponent = selectRandomMonsterByRole(playerRole == Role.SCARER ? Role.LAUGHER : Role.SCARER);
 		this.current = player;
+		
 		allMonsters.remove(player);
 		allMonsters.remove(opponent);
+		
 		Board.setStationedMonsters(allMonsters);
 		board.initializeBoard(DataLoader.readCells());
 	}
@@ -63,56 +66,54 @@ public class Game {
 	}
 	
 	private Monster getCurrentOpponent() {
-		return (current == player)? opponent:player;
+		return current == player ? opponent : player;
 	}
-	
+
 	private int rollDice() {
-		Random r = new Random();
-		int x = r.nextInt(6)+1;
-		return x;
+		Random rand = new Random();
+		return rand.nextInt(6) + 1;
 	}
 	
 	public void usePowerup() throws OutOfEnergyException {
-		Monster currentOpponent = getCurrentOpponent();
-		if (current.getEnergy() >= Constants.POWERUP_COST) {
-			current.executePowerupEffect(currentOpponent);
-			current.setEnergy(current.getEnergy()-500);}
-		else
-			throw new OutOfEnergyException();
+		if (current.getEnergy() < Constants.POWERUP_COST)
+			throw new OutOfEnergyException("Not enough energy to use powerup");
+		
+		current.executePowerupEffect(getCurrentOpponent());
+		current.setEnergy(current.getEnergy() - Constants.POWERUP_COST);
 	}
 	
 	public void playTurn() throws InvalidMoveException {
-		int roll;
 		if (current.isFrozen()) {
+			System.out.println(current.getName() + " is frozen! Turn skipped.");
 			current.setFrozen(false);
+			switchTurn();
+			return;
 		}
-		else {
-			roll = rollDice();
-			Monster currentOpponent = getCurrentOpponent(); 
-			board.moveMonster(current, roll, currentOpponent);
-		}
+		
+		int roll = rollDice();
+		
+		board.moveMonster(current, roll, getCurrentOpponent());
+		
 		switchTurn();
 	}
 	
 	private void switchTurn() {
-		Monster currentOpponent = getCurrentOpponent(); 
-		setCurrent(currentOpponent);
+		this.setCurrent(getCurrentOpponent());
 	}
 	
 	private boolean checkWinCondition(Monster monster) {
-		int position = monster.getPosition();
-		int energy = monster.getEnergy();
-		return (position == Constants.WINNING_POSITION && energy >= Constants.WINNING_ENERGY);
+		return monster.getPosition() == Constants.WINNING_POSITION && 
+		       monster.getEnergy() >= Constants.WINNING_ENERGY;
 	}
+	
 	public Monster getWinner() {
-		 if (checkWinCondition(player)) {
-			 return player;
-		 }
-		 else if (checkWinCondition(opponent)) {
-			 return opponent;
-		 }
-		 else
-			 return null;
+		if (checkWinCondition(player)) 
+			return player;
+		
+		if (checkWinCondition(opponent)) 
+			return opponent;
+		
+		return null;
 	}
 	
 }

@@ -15,7 +15,6 @@ public abstract class Card {
 		this.rarity = rarity;
 		this.lucky = lucky;
 	}
-	public abstract void performAction(Monster player, Monster opponent);
 	
 	public String getName() {
 		return name;
@@ -32,5 +31,7 @@ public abstract class Card {
 	public boolean isLucky() {
 		return lucky;
 	}
+
+	public abstract void performAction(Monster player, Monster opponent);
 	
 }
