@@ -1,7 +1,5 @@
 package game.engine.cells;
 
-import game.engine.monsters.Monster;
-
 public abstract class TransportCell extends Cell {
 	private int effect;
 
