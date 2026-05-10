@@ -1,0 +1,30 @@
+/* Sets the main background to a dark color */
+.root {
+    -fx-background-image: url("../images/MonstersCompany.jpg"); 
+	-fx-background-size: cover;
+	-fx-background-repeat: no-repeat;
+}
+
+/* Gives your buttons a clean, professional look */
+.button {
+    -fx-font-size: 40px;
+    -fx-text-fill: white;
+    -fx-background-color: #008CBA;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 20px;
+}
+
+/* Makes the buttons glow slightly when the mouse hovers over them */
+.button:hover {
+    -fx-background-color: #005f7a;
+    -fx-cursor: hand;
+}
+
+.gameTitle {
+	-fx-font-size: 70px;
+	-fx-text-fill: #0766BC;
+	-fx-background-color: white;
+	-fx-background-radius: 16px;
+	-fx-padding: 15px 50px;
+
+}

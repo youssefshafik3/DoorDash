@@ -1,0 +1,11 @@
+/* Your existing global rule applies to everything */
+.root {
+    -fx-font-family: "Monster AG"; 
+}
+
+/* This specific rule overrides the root font whenever you use it */
+.readable-text {
+    -fx-font-family: "Arial", sans-serif; /* A standard, clean system font */
+    -fx-font-size: 16px;
+    -fx-text-fill: #1a1a2e; /* Dark text for easy reading */
+}
