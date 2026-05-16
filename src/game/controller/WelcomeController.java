@@ -3,18 +3,22 @@ package game.controller;
 import javafx.animation.FadeTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.ScaleTransition;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
+import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -55,9 +59,7 @@ public class WelcomeController implements Initializable {
             e.printStackTrace();
         }
         
-        btnStart.setOnAction(event -> {
-            System.out.println("Start button clicked! Time to pick a monster.");
-        });
+        
 
         btnSettings.setOnAction(event -> {
             try {
@@ -153,4 +155,45 @@ public class WelcomeController implements Initializable {
         });
         
     }
+    @FXML
+    private void handleStart(ActionEvent event) {
+        System.out.println("Start button clicked! Time to pick a monster");
+    	if (backgroundPlayer!=null)
+    		backgroundPlayer.stop();
+       try {
+    	   URL startSoundURL = getClass().getResource("/resources/music/roleBackground.mp3");
+           if (startSoundURL != null) {
+               AudioClip startSFX = new AudioClip(startSoundURL.toExternalForm());
+               startSFX.play();
+           } else {
+               System.err.println("Could not find gameStart.mp3 resource.");
+           }
+       } catch (Exception e) {
+           System.err.println("Error playing start sound effect.");
+           e.printStackTrace();
+       }  
+       
+    	try {
+            // 1. Load the Role Selection FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/roleSelection.fxml"));
+            Parent roleSelectionRoot = loader.load();
+
+            // 2. Get the current Stage
+            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
+            
+            // 3. Create the Fade Animation for the new screen
+            roleSelectionRoot.setOpacity(0); // Start invisible
+            Scene nextScene = new Scene(roleSelectionRoot, 1024, 768);
+            stage.setScene(nextScene);
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(800), roleSelectionRoot);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+
+        } catch (IOException e) {
+            System.err.println("Error: RoleSelection.fxml not found.");
+            e.printStackTrace();
+        }
+    } 
 }

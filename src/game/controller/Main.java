@@ -11,7 +11,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
+    	Font.loadFont(getClass().getResourceAsStream("/resources/fonts/Poppin-Regular.ttf"), 14);
+    	Font.loadFont(getClass().getResourceAsStream("/resources/fonts/Gang Bangers.ttf"), 14);
     	Font.loadFont(getClass().getResourceAsStream("/resources/fonts/Monster AG.ttf"), 14);
         // 1. Load the Welcome Screen FXML
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml"));

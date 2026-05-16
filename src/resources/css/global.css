@@ -8,4 +8,30 @@
     -fx-font-family: "Arial", sans-serif; /* A standard, clean system font */
     -fx-font-size: 16px;
     -fx-text-fill: #1a1a2e; /* Dark text for easy reading */
+    
+}
+.role-button {
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
+    -fx-cursor: hand;
+    -fx-border-color: #333;
+    -fx-border-width: 3px;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+}
+
+#btnScarer {
+    -fx-background-image: url("/resources/images/scarer_bg.png");
+}
+
+#btnLaugher {
+    -fx-background-image: url("/resources/images/laugher_bg.png");
+}
+
+/* Add a hover effect to make it interactive */
+.role-button:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
 }

@@ -18,7 +18,7 @@
             </VBox>
             <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="25.0">
                <children>
-                  <Button fx:id="btnStart" mnemonicParsing="false" text="START" />
+                  <Button fx:id="btnStart" mnemonicParsing="false" onAction="#handleStart" text="START" />
                   <Button fx:id="btnSettings" mnemonicParsing="false" text="SETTINGS" />
                   <Button fx:id="btnRules" mnemonicParsing="false" text="GAME RULES" />
                   <Button fx:id="btnAboutUs" mnemonicParsing="false" text="ABOUT US" />
