@@ -20,15 +20,24 @@ import game.engine.monsters.Monster;
 import game.engine.monsters.MultiTasker;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.StageStyle;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 
 public class BoardController {
 	
@@ -114,7 +123,105 @@ public class BoardController {
 		// 4. Place them on the board for the first time
 		updateTokenPositions();
 		updateDashboards();
-    }
+		// Paste this inside the bottom of public void initData(...)
+		javafx.application.Platform.runLater(() -> {
+		    if (boardGrid.getScene() != null) {
+		        boardGrid.getScene().addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+		            if (event.getCode() == KeyCode.W) {
+		                triggerGameOver("James P. Sullivan", "Scarer", "#00ffcc");
+		            }
+		        });
+		    }
+		});
+		// ---- BULLETPROOF CHEAT KEYS ROUTED DIRECTLY THROUGH THE DICE BUTTON ----
+	    btnRollDice.setOnKeyPressed(event -> {
+	        
+	        // ---- CHEAT KEY [W]: INSTANT WIN ----
+	        if (event.getCode() == javafx.scene.input.KeyCode.W) {
+	            System.out.println("-> [W] intercepted by Dice Button! Launching GameOver...");
+	            triggerGameOver("James P. Sullivan", "Scarer", "#00ffcc");
+	            event.consume();
+	        }
+	        
+	        // ---- CHEAT KEY [E]: INCREASE ENERGY ----
+	     // ---- CHEAT KEY [E]: INCREASE BOTH PLAYER & OPPONENT ENERGY ----
+	        else if (event.getCode() == javafx.scene.input.KeyCode.E) {
+	            System.out.println("-> [E] intercepted! Increasing energy for BOTH players...");
+	            try {
+	                // 1. UPDATE PLAYER ENERGY
+	                String pRaw = pEnergyLabel.getText().replaceAll("\\D+", "");
+	                int pCurrent = Integer.parseInt(pRaw);
+	                int pNew = pCurrent + 20;
+	                pEnergyLabel.setText("ENERGY: " + pNew);
+	                
+	                // 2. UPDATE OPPONENT ENERGY (Added this!)
+	                String oRaw = oEnergyLabel.getText().replaceAll("\\D+", "");
+	                int oCurrent = Integer.parseInt(oRaw);
+	                int oNew = oCurrent + 20;
+	                oEnergyLabel.setText("ENERGY: " + oNew);
+	                
+	                // 3. Update the backend engine models if they exist
+	                if (game != null) {
+	                    // Adjust these method names if they look different in your Game.java/Monster.java
+	                    if (game.getCurrent() != null) {
+	                        game.getCurrent().setEnergy(pNew);
+	                    }
+	                    // If you have a way to grab the other player directly, you can update them too:
+	                    // game.getOpponent().setEnergy(oNew);
+	                }
+	                
+	                System.out.println("New Stats -> Player: " + pNew + " | Opponent: " + oNew);
+	            } catch (Exception e) {
+	                System.err.println("Error parsing labels inside button key listener:");
+	                e.printStackTrace();
+	            }
+	            event.consume();
+	        }
+	    });
+	} // This is the end of your initData method}
+	public void setupDebugControls() {
+	    // We grab the scene context via your existing boardGrid layout node
+	    if (boardGrid.getScene() != null) {
+	        boardGrid.getScene().setOnKeyPressed((KeyEvent event) -> {
+	            
+	            // ---- CHEAT KEY [W]: INSTANT WIN ----
+	            if (event.getCode() == KeyCode.W) {
+	                System.out.println("Debug Key [W] Pressed! Triggering Scarer Victory Scenario.");
+	                triggerGameOver("James P. Sullivan", "Scarer", "#00ffcc");
+	            }
+	            
+	            // ---- CHEAT KEY [E]: INCREASE ENERGY ----
+	            else if (event.getCode() == javafx.scene.input.KeyCode.E) {
+	                System.out.println("Debug Key [E] Pressed! Running bulletproof parser...");
+	                try {
+	                    // 1. BULLETPROOF: Delete EVERYTHING except the numbers (strips "ENERGY", spaces, and colons perfectly)
+	                    String rawNumbersOnly = pEnergyLabel.getText().replaceAll("\\D+", "");
+	                    
+	                    // 2. Convert to int
+	                    int currentEnergy = Integer.parseInt(rawNumbersOnly);
+	                    
+	                    // 3. Add 20 points
+	                    int newEnergy = currentEnergy + 20;
+	                    
+	                    // 4. Write it back to the screen matching your exact layout
+	                    pEnergyLabel.setText("ENERGY: " + newEnergy);
+	                    
+	                    // 5. Update backend model
+	                    if (game != null && game.getCurrent() != null) {
+	                        game.getCurrent().setEnergy(newEnergy);
+	                    }
+	                    
+	                    System.out.println("Successfully updated energy to: " + newEnergy);
+	                    
+	                } catch (Exception e) {
+	                    System.err.println("CRASH ERROR: The label text still couldn't be parsed!");
+	                    e.printStackTrace();
+	                }
+	            	event.consume();
+	            }
+	        });
+	    }
+	}
 	
 	private void buildGrid() {
 	    // Assuming your engine instance is already initialized
@@ -289,6 +396,7 @@ public class BoardController {
 	        
 	        // 4. Check if someone won
 	        checkWinCondition();               
+	        
 
 	    } catch (InvalidMoveException e) {
 	        // Catch the specific exception from your backend and show it
@@ -374,4 +482,130 @@ public class BoardController {
 	    opponentToken.toFront();
 	}
 
+    private void showVictoryPopup(String winnerName, String winnerRole, int scarerEnergy, int laugherEnergy, String accentColor) {
+        // 1. Initialize popup stage container context
+        Stage popupStage = new Stage();
+        popupStage.initModality(Modality.APPLICATION_MODAL);
+        popupStage.initStyle(StageStyle.UNDECORATED); 
+
+        // 2. Main Game Over Headline
+        Label lblGameOver = new Label("GAME OVER");
+        lblGameOver.setStyle("-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #ff3333; -fx-letter-spacing: 2px;");
+
+        // 3. Victor Identification Badge
+        Label lblWinnerInfo = new Label("🏆 VICTOR: " + winnerName + " (" + winnerRole + ")");
+        lblWinnerInfo.setStyle("-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: " + accentColor + ";");
+
+        // --- 4. Final Energy Metrics Dashboard Box ---
+        VBox energyBox = new VBox(8);
+        energyBox.setAlignment(Pos.CENTER);
+        energyBox.setStyle("-fx-background-color: #1a1f38; -fx-padding: 15px; -fx-background-radius: 10px; -fx-border-color: #3a4266; -fx-border-width: 1px;");
+
+        Label lblEnergyTitle = new Label("FINAL ENERGY LEVELS");
+        lblEnergyTitle.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #8b94c6;");
+
+        Label lblScarerEnergy = new Label("⚡ Scarer Energy: " + scarerEnergy + " AP");
+        lblScarerEnergy.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #00ffcc;");
+
+        Label lblLaugherEnergy = new Label("🔋 Laugher Energy: " + laugherEnergy + " AP");
+        lblLaugherEnergy.setStyle("-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #33ff33;");
+        
+        energyBox.getChildren().addAll(lblEnergyTitle, lblScarerEnergy, lblLaugherEnergy);
+
+        // --- 5. Return to Menu Controller Trigger ---
+        Button btnMainMenu = new Button("RETURN TO MAIN MENU");
+        btnMainMenu.setStyle(
+            "-fx-background-color: " + accentColor + ";" +
+            "-fx-text-fill: #111625;" +
+            "-fx-font-weight: bold;" +
+            "-fx-font-size: 14px;" +
+            "-fx-padding: 10px 25px;" +
+            "-fx-background-radius: 8px;" +
+            "-fx-cursor: hand;"
+        );
+        
+        btnMainMenu.setOnAction(e -> {
+            popupStage.close();
+            try {
+                // Re-use your clean FXML loader pattern to jump straight back to welcome frame
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml"));
+                Parent welcomeRoot = loader.load();
+                
+                // Grab the primary active window stage reference via the button's layout node
+                Stage mainStage = (Stage) btnMainMenu.getScene().getWindow();
+                
+                // Instantly transition back to your native welcome dimensions framework
+                Scene welcomeScene = new Scene(welcomeRoot, 600, 400); 
+                mainStage.setScene(welcomeScene);
+                mainStage.show();
+            } catch (Exception ex) {
+                System.err.println("Failed to cleanly transition to Welcome Menu screen layout.");
+                ex.printStackTrace();
+            }
+        });
+
+        // 6. Master Layout Structure Integration
+        VBox rootLayout = new VBox(22, lblGameOver, lblWinnerInfo, energyBox, btnMainMenu);
+        rootLayout.setAlignment(Pos.CENTER);
+        rootLayout.setStyle(
+            "-fx-background-color: #111625;" +
+            "-fx-border-color: " + accentColor + ";" +
+            "-fx-border-width: 3px;" +
+            "-fx-border-radius: 15px;" +
+            "-fx-background-radius: 15px;" +
+            "-fx-padding: 35px;"
+        );
+
+        // 7. Initialize Popup Bounds Dimensions
+        Scene popupScene = new Scene(rootLayout, 420, 320);
+        popupStage.setScene(popupScene);
+        popupStage.centerOnScreen();
+        popupStage.showAndWait(); 
+    }
+    /**
+     * Launches the Game Over FXML popup overlay using your existing board architecture.
+     */
+    private void triggerGameOver(String name, String role, String accentColor) {
+        try {
+            // 1. Initialize the FXML loader pointing to your layout resource
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/gameOver.fxml"));
+            Parent root = loader.load();
+
+            // 2. Fetch the popup's controller class
+            GameOverController popupController = loader.getController();
+            
+            // 3. RETRIEVE THE ENERGY LEVELS FROM YOUR GAME OBJECT
+            // Since your data is inside the 'game' object, you will fetch them using your getters.
+            // It might look like game.getScarer().getEnergy() depending on your Game.java design.
+            // For now, let's use placeholders or 0 so your code compiles instantly:
+            // NEW BULLETPROOF LINE:
+            int PlayerEnergy = Integer.parseInt(pEnergyLabel.getText().replaceAll("\\D+", ""));
+            int OpponentEnergy = Integer.parseInt(pEnergyLabel.getText().replaceAll("\\D+", ""));
+            // Pass the stats over to the popup window
+            popupController.setGameStats(name, role, PlayerEnergy, OpponentEnergy, accentColor);
+
+            // 4. Construct and launch the modal popup window stage container
+            Stage popupStage = new Stage();
+            popupStage.initModality(Modality.APPLICATION_MODAL);
+            popupStage.initStyle(StageStyle.UNDECORATED); 
+            popupStage.setScene(new Scene(root));
+            popupStage.centerOnScreen();
+            
+            // Pauses execution here until the user closes the popup
+            popupStage.showAndWait(); 
+
+            // 5. AFTER CLOSING: Switch back to the Welcome Screen
+            // FIXED: Using your real 'boardGrid' variable to grab the active window window context!
+            Stage mainStage = (Stage) boardGrid.getScene().getWindow(); 
+            FXMLLoader welcomeLoader = new FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml"));
+            
+            mainStage.setScene(new Scene(welcomeLoader.load(), 1024, 768));
+            mainStage.show();
+
+        } catch (Exception e) {
+            System.err.println("Fatal Error: Failed to execute transition sequence through Game Over wizard.");
+            e.printStackTrace();
+        }
+    }
+    
 }
