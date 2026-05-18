@@ -13,7 +13,7 @@
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <center>
-            <GridPane fx:id="boardGrid" BorderPane.alignment="CENTER">
+            <GridPane fx:id="boardGrid" alignment="CENTER" BorderPane.alignment="CENTER">
             </GridPane>
          </center>
          <left>

@@ -59,6 +59,10 @@ public class BoardController {
 	private Image[] doorImages;
 	private final Map<String, Image> monsterImages = new HashMap<>();
 	
+	private StackPane[] cellViews = new StackPane[100]; // Caches the UI cells for instant access
+	private ImageView playerToken;
+	private ImageView opponentToken;
+	
 	public void initData(Game initializedGame) {
 		this.game = initializedGame;
 		
@@ -74,7 +78,7 @@ public class BoardController {
 				    new Image(getClass().getResourceAsStream("/resources/images/doors/door_yellow.jpg")),
 				    new Image(getClass().getResourceAsStream("/resources/images/doors/boosDoor.jpg"))
 				    };
-	        monsterImages.put("James P. Sullivan", new Image(getClass().getResourceAsStream("/resources/images/monsters/sully.jpeg")));
+	        monsterImages.put("James P. Sullivan", new Image(getClass().getResourceAsStream("/resources/images/monsters/sully.png")));
 	        monsterImages.put("Mike Wazowski", new Image(getClass().getResourceAsStream("/resources/images/monsters/mike.png")));
 	        monsterImages.put("Randall Boggs", new Image(getClass().getResourceAsStream("/resources/images/monsters/randall.png")));
 	        monsterImages.put("Celia Mae", new Image(getClass().getResourceAsStream("/resources/images/monsters/celia.png")));
@@ -89,6 +93,26 @@ public class BoardController {
 	        e.printStackTrace();
 	    }
 		buildGrid();
+		String pName = game.getPlayer().getName();
+		String oName = game.getOpponent().getName();
+
+		// 2. Create the ImageViews for the tokens
+		playerToken = new ImageView(monsterImages.get(pName));
+		opponentToken = new ImageView(monsterImages.get(oName));
+
+		// 3. Make them smaller than the 60x60 cell so they fit nicely
+		playerToken.setFitWidth(30);
+		playerToken.setFitHeight(30);
+		opponentToken.setFitWidth(30);
+		opponentToken.setFitHeight(30);
+
+		// Optional: Add a drop shadow so they look like physical pieces sitting on the board
+		String dropShadowCSS = "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);";
+		playerToken.setStyle(dropShadowCSS);
+		opponentToken.setStyle(dropShadowCSS);
+
+		// 4. Place them on the board for the first time
+		updateTokenPositions();
 		updateDashboards();
     }
 	
@@ -115,6 +139,7 @@ public class BoardController {
 
 	        // 3. Create the Visual Node
 	        StackPane cellView = createCellView(cellData, i);
+	        cellViews[i] = cellView;
 
 	        // 4. Add to GridPane
 	        boardGrid.add(cellView, guiCol, guiRow);
@@ -248,31 +273,31 @@ public class BoardController {
 	    return status.length() == 0 ? "None" : status.toString();
 	}
 	@FXML
-    private void handleRollDice(ActionEvent event) {
-        try {
-            // 1. Tell the backend to play the turn
-            Monster activeMonster = game.getCurrent();
-            game.playTurn(); 
-            
-            // 2. Update the UI upon success
-            gameLogLabel.setText(activeMonster.getName() + " rolled the dice and moved!");
-            updateDashboards();
-            
-            // 3. Rebuild or update the grid to show new positions visually
-            boardGrid.getChildren().clear(); // Clear the old grid
-            buildGrid(); // Redraw the grid with updated positions
-            
-            // 4. Check if someone won
-            checkWinCondition();            	
+	private void handleRollDice(ActionEvent event) {
+	    try {
+	        // 1. Tell the backend to play the turn
+	        Monster activeMonster = game.getCurrent();
+	        game.playTurn(); 
+	        
+	        // 2. Update the UI upon success
+	        gameLogLabel.setText(activeMonster.getName() + " rolled the dice and moved!");
+	        updateDashboards();
+	        
+	        // 3. Move the physical tokens to their new cells
+	        // ---> DELETED boardGrid.getChildren().clear() and buildGrid() <---
+	        updateTokenPositions(); 
+	        
+	        // 4. Check if someone won
+	        checkWinCondition();               
 
-        } catch (InvalidMoveException e) {
-            // Catch the specific exception from your backend and show it
-            showErrorPopup("Invalid Move: " + e.getMessage());
-        } catch (Exception e) {
-            // Catch any unexpected errors without crashing
-            showErrorPopup("An error occurred: " + e.getMessage());
-        }
-    }
+	    } catch (InvalidMoveException e) {
+	        // Catch the specific exception from your backend and show it
+	        showErrorPopup("Invalid Move: " + e.getMessage());
+	    } catch (Exception e) {
+	        // Catch any unexpected errors without crashing
+	        showErrorPopup("An error occurred: " + e.getMessage());
+	    }
+	}
 	@FXML
     private void handleUsePowerup(ActionEvent event) {
         try {
@@ -316,5 +341,37 @@ public class BoardController {
             // TODO: Trigger the final Game Over Screen (Milestone Requirement)
         }
     }
+    private void updateTokenPositions() {
+	    // 1. Get current positions from the backend
+	    int pPos = game.getPlayer().getPosition();
+	    int oPos = game.getOpponent().getPosition();
+
+	    // 2. Remove tokens from their previous cells (if they were already on the board)
+	    if (playerToken.getParent() != null) {
+	        ((StackPane) playerToken.getParent()).getChildren().remove(playerToken);
+	    }
+	    if (opponentToken.getParent() != null) {
+	        ((StackPane) opponentToken.getParent()).getChildren().remove(opponentToken);
+	    }
+
+	    // 3. Align them so they don't overlap each other if they land on the same cell
+	    if (pPos == oPos) {
+	        // For Cell 0 (or any shared cell): Place side-by-side
+	        StackPane.setAlignment(playerToken, Pos.CENTER_LEFT);
+	        StackPane.setAlignment(opponentToken, Pos.CENTER_RIGHT);
+	    } else {
+	        // For the rest of the game: Dead center
+	        StackPane.setAlignment(playerToken, Pos.CENTER);
+	        StackPane.setAlignment(opponentToken, Pos.CENTER);
+	    }
+
+	    // 4. Add them to their new specific cells using the cellViews cache array
+	    cellViews[pPos].getChildren().add(playerToken);
+	    cellViews[oPos].getChildren().add(opponentToken);
+	    
+	    // 5. Bring them to the absolute front so index numbers don't cover them
+	    playerToken.toFront();
+	    opponentToken.toFront();
+	}
 
 }
