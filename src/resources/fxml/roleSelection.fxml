@@ -17,8 +17,8 @@
             <Font name="Hiragino Sans GB W6" size="32.0" />
          </font>
       </Label>
-      <Button fx:id="btnLaugher" layoutX="578.0" layoutY="75.0" mnemonicParsing="false" prefHeight="692.0" prefWidth="446.0" styleClass="role-button" />
-      <Button fx:id="btnScarer" layoutY="76.0" mnemonicParsing="false" prefHeight="692.0" prefWidth="446.0" styleClass="role-button" />
+      <Button fx:id="btnLaugher" layoutX="578.0" layoutY="75.0" mnemonicParsing="false" onAction="#handleLaugherSelection" prefHeight="692.0" prefWidth="446.0" styleClass="role-button" />
+      <Button fx:id="btnScarer" layoutY="76.0" mnemonicParsing="false" onAction="#handleScarerSelection" prefHeight="692.0" prefWidth="446.0" styleClass="role-button" />
       <Label fx:id="lblScarer" alignment="CENTER" layoutX="167.0" layoutY="25.0" prefHeight="29.0" prefWidth="100.0" text="Scarer" textAlignment="CENTER">
          <font>
             <Font name="Impact" size="24.0" />

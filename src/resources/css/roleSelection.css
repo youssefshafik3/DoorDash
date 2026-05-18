@@ -29,7 +29,7 @@ role-button:hover {
     -fx-background-image: url("../images/scarerBackground.jpg");
 	-fx-background-size:stretch;
 	-fx-background-repeat: no-repeat;
-	-fx-backgound-position:center;
+	-fx-background-positions:center;
 	
 }
 

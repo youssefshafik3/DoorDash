@@ -1,23 +1,39 @@
 package game.controller;
 
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.AudioClip;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.Stage;
+
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import game.engine.Game;
+import game.engine.Role;
+
 public class RoleSelectionController implements Initializable {
-	@FXML private Pane rootPane;
+	@FXML
+	private Pane rootPane;
 	
-    @FXML private Button btnScarer;
-    @FXML private Button btnLaugher;
-    @FXML private Label lblScarer;
-    @FXML private Label lblLaugher;
+    @FXML
+    private Button btnScarer;
+    @FXML
+    private Button btnLaugher;
+    @FXML
+    private Label lblScarer;
+    @FXML
+    private Label lblLaugher;
 
     // SFX (Short sounds)
     private AudioClip scareSFX;
@@ -95,4 +111,47 @@ public class RoleSelectionController implements Initializable {
             button.setScaleY(1.0);
         });
     }
+    @FXML
+    private void handleScarerSelection(ActionEvent event) {
+        transitionToBoard(Role.SCARER, event);
+    }
+
+    @FXML
+    private void handleLaugherSelection(ActionEvent event) {
+        transitionToBoard(Role.LAUGHER, event);
+    }
+
+    private void transitionToBoard(Role chosenRole, ActionEvent event) {
+        // 1. Stop all audio before leaving the screen
+        if (evilMusic != null) evilMusic.stop();
+        if (funnyMusic != null) funnyMusic.stop();
+        if (scareSFX != null) scareSFX.stop();
+        if (laughSFX != null) laughSFX.stop();
+
+        try {
+            // 2. Initialize the backend Game model using the selected role
+            Game gameModel = new Game(chosenRole);
+            System.out.println(gameModel.getOpponent().getName());
+            System.out.println(gameModel.getCurrent().getName());
+
+            // 3. Load the Board FXML
+            // (Make sure the path matches where your Board.fxml actually lives)
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/board.fxml")); 
+            Parent boardRoot = loader.load();
+
+            // 4. Pass the initialized Game to the BoardController
+            BoardController boardController = loader.getController();
+            boardController.initData(gameModel);
+
+            // 5. Swap the Scene on the current Stage
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(boardRoot,1200,800));
+            stage.show();
+
+        } catch (IOException e) {
+            System.err.println("Failed to load the game board or initialize the engine.");
+            e.printStackTrace();
+        }
+    }
+    
 }
