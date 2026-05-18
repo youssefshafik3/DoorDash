@@ -13,6 +13,8 @@ public class Board {
 	private static ArrayList<Monster> stationedMonsters; 
 	private static ArrayList<Card> originalCards;
 	public static ArrayList<Card> cards;
+	private static Card lastDrawnCard = null;
+	private static boolean[] exhaustedCardCells = new boolean[Constants.BOARD_SIZE];
 	
 	public Board(ArrayList<Card> readCards) {
 		this.boardCells = new Cell[Constants.BOARD_ROWS][Constants.BOARD_COLS];
@@ -69,6 +71,16 @@ public class Board {
 		int[] pos = indexToRowCol(index);
 		boardCells[pos[0]][pos[1]] = cell;
 	}
+	public static Card getLastDrawnCard() {
+        return lastDrawnCard;
+    }
+
+    public static void clearLastDrawnCard() {
+        lastDrawnCard = null;
+    }
+    public static boolean isCardCellExhausted(int index) {
+        return exhaustedCardCells[index];
+    }
 	
 	public void initializeBoard(ArrayList<Cell> specialCells) {
 		ArrayList<Cell> doorCells = new ArrayList<>();
@@ -115,13 +127,16 @@ public class Board {
 	public static void reloadCards() {
 		cards = new ArrayList<>(originalCards);
 		Collections.shuffle(cards);
+		exhaustedCardCells = new boolean[Constants.BOARD_SIZE];
+		System.out.println("Deck reshuffled! All board card cells restored to full color.");
     }
 	
 	public static Card drawCard() {
 		if (cards.isEmpty()) 
 			reloadCards();
 		
-		return cards.remove(0);
+		lastDrawnCard = cards.remove(0); 
+        return lastDrawnCard;
 	}
 
 	public void moveMonster(Monster currentMonster, int roll, Monster opponentMonster) throws InvalidMoveException {
@@ -129,6 +144,23 @@ public class Board {
 	    int oldPosition = currentMonster.getPosition();
 	    
 	    currentMonster.move(roll);
+	    
+	    int landingPos = currentMonster.getPosition();
+	    
+	    if (getCell(landingPos) instanceof CardCell) {
+	        // If it has NOT been visited yet before reshuffling...
+	        if (!exhaustedCardCells[landingPos]) {
+	            exhaustedCardCells[landingPos] = true; // 1. Grey it out for next time
+	            getCell(landingPos).onLand(currentMonster, opponentMonster); // 2. Execute the card power!
+	        } else {
+	            // It WAS visited before! 
+	            System.out.println("Landed on an exhausted card cell. Safe tile, no card drawn!");
+	            // Notice we do NOT call onLand() here, so the power is completely stopped!
+	        }
+	    } else {
+	        // For all other cells (Socks, Belts, Doors, Monsters), execute normally
+	        getCell(landingPos).onLand(currentMonster, opponentMonster);
+	    }
 
 	    getCell(currentMonster.getPosition()).onLand(currentMonster, opponentMonster);
 

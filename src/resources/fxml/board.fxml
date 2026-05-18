@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
@@ -13,8 +14,13 @@
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <center>
-            <GridPane fx:id="boardGrid" alignment="CENTER" BorderPane.alignment="CENTER">
+            <StackPane BorderPane.alignment="CENTER">
+               <children>
+                  <GridPane fx:id="boardGrid" alignment="CENTER">
             </GridPane>
+                  <Pane fx:id="overlayPane" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" />
+               </children>
+            </StackPane>
          </center>
          <left>
             <VBox fx:id="playerDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
@@ -24,6 +30,7 @@
                   <Label fx:id="pTypeLabel" text="Type" />
                   <Label fx:id="pOriginalRoleLabel" text="Original Role" />
                   <Label fx:id="pCurrentRoleLabel" text="Current Role" />
+                  <Label fx:id="pAbilityLabel" text="Abilities" wrapText="true" />
                   <Label fx:id="pEnergyLabel" text="Energy" />
                   <Label fx:id="pPositionLabel" text="Position" />
                   <Label fx:id="pStatusLabel" text="Status" />
@@ -37,6 +44,7 @@
                   <Label fx:id="oTypeLabel" text="Type" />
                   <Label fx:id="oOriginalRoleLabel" text="Original Role" />
                   <Label fx:id="oCurrentRoleLabel" text="Current Role" />
+                  <Label fx:id="oAbilityLabel" text="Abilities" wrapText="true" />
                   <Label fx:id="oEnergyLabel" text="Energy" />
                   <Label fx:id="oPositionLabel" text="Position" />
                   <Label fx:id="oStatusLabel" text="Status" />
@@ -51,12 +59,23 @@
                </children></HBox>
          </bottom>
       </BorderPane>
-      <StackPane fx:id="errorPopupOverlay" prefHeight="150.0" prefWidth="200.0" visible="false">
+      <StackPane fx:id="errorPopupOverlay" prefHeight="150.0" prefWidth="200.0" styleClass="popup-overlay" visible="false">
          <children>
-            <VBox maxHeight="150.0" maxWidth="300.0" prefHeight="200.0" prefWidth="100.0">
+            <VBox maxHeight="150.0" maxWidth="300.0" prefHeight="200.0" prefWidth="100.0" styleClass="popup-box">
                <children>
-                  <Label fx:id="errorPopupMessage" text="Text" />
-                  <Button mnemonicParsing="false" onAction="#hideErrorPopup" text="OK" />
+                  <Label fx:id="errorPopupMessage" styleClass="popup-text" text="Text" />
+                  <Button mnemonicParsing="false" onAction="#hideErrorPopup" styleClass="close-button" text="OK" />
+               </children>
+            </VBox>
+         </children>
+      </StackPane>
+      <StackPane fx:id="cardPopupOverlay" prefHeight="150.0" prefWidth="200.0" styleClass="popup-overlay" visible="false">
+         <children>
+            <VBox alignment="CENTER" maxHeight="350.0" maxWidth="250.0" prefHeight="200.0" prefWidth="100.0" styleClass="popup-box" StackPane.alignment="CENTER">
+               <children>
+                  <Label fx:id="cardTitleLabel" styleClass="popup-text" text="Label" />
+                  <Label fx:id="cardEffectLabel" styleClass="popup-text" text="Label" />
+                  <Button mnemonicParsing="false" onAction="#hideCardPopup" styleClass="close-button" text="OK" />
                </children>
             </VBox>
          </children>
@@ -65,5 +84,6 @@
    <stylesheets>
       <URL value="@../css/board.css" />
       <URL value="@../css/global.css" />
+      <URL value="@../css/popup.css" />
    </stylesheets>
 </StackPane>

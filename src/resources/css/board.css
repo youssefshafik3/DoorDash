@@ -102,28 +102,6 @@
     -fx-background-radius: 4px;
     -fx-translate-y: -2px; /* Pull it slightly up from the absolute bottom edge */
 }
-
-/* ========================================================
-   POPUP OVERLAYS
-   ======================================================== */
-.popup-overlay-bg {
-    -fx-background-color: rgba(0, 0, 0, 0.6); /* Slightly darker for better focus */
-}
-
-.popup-box {
-    -fx-background-color: white;
-    -fx-padding: 25px;
-    -fx-border-radius: 10px;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.6), 15, 0, 0, 0); /* Heavier drop shadow */
-    -fx-border-color: #d32f2f; /* Red border for errors */
-    -fx-border-width: 2px;
-}
-
-.popup-text {
-    -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 16px;
-    -fx-text-fill: #d32f2f; 
-    -fx-font-weight: bold;
-    -fx-alignment: center;
+.token-shadow {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);
 }

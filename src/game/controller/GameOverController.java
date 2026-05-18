@@ -23,15 +23,11 @@ public class GameOverController {
         lblScarerEnergy.setText("⚡ Scarer Energy: " + scarerEnergy + " AP");
         lblLaugherEnergy.setText("🔋 Laugher Energy: " + laugherEnergy + " AP");
         
-        // Dynamically skin the menu button to match the theme color of whichever monster won
-        btnMenu.setStyle(
-            "-fx-background-color: " + accentColor + ";" +
-            "-fx-text-fill: #111625;" +
-            "-fx-font-weight: bold;" +
-            "-fx-font-size: 14px;" +
-            "-fx-background-radius: 8px;" +
-            "-fx-cursor: hand;"
-        );
+        // --- FIXED: Removed the inline structural style overrides ---
+        // Instead of overriding the entire background, fonts, and borders, 
+        // we just optionally pass the text color tint if you want it, or delete this line completely 
+        // to let the .close-button CSS class have 100% control!
+        btnMenu.setStyle("-fx-text-fill: #111625;"); 
     }
 
     @FXML
