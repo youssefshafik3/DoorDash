@@ -19,11 +19,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
@@ -44,8 +46,8 @@ public class BoardController {
     // --- FXML INJECTIONS ---
     @FXML private GridPane boardGrid;
     @FXML private Pane overlayPane;
-    @FXML private Label pNameLabel, pTypeLabel, pOriginalRoleLabel, pCurrentRoleLabel, pEnergyLabel, pPositionLabel, pStatusLabel, pAbilityLabel;
-    @FXML private Label oNameLabel, oTypeLabel, oOriginalRoleLabel, oCurrentRoleLabel, oEnergyLabel, oPositionLabel, oStatusLabel, oAbilityLabel;
+    @FXML private Label pTitleLabel,pNameLabel, pTypeLabel, pOriginalRoleLabel, pCurrentRoleLabel, pEnergyLabel, pPositionLabel, pStatusLabel, pAbilityLabel;
+    @FXML private Label oTitleLabel,oNameLabel, oTypeLabel, oOriginalRoleLabel, oCurrentRoleLabel, oEnergyLabel, oPositionLabel, oStatusLabel, oAbilityLabel;
     @FXML private Button btnRollDice, btnPowerup;
     @FXML private Label gameLogLabel;
     @FXML private StackPane errorPopupOverlay;
@@ -53,6 +55,7 @@ public class BoardController {
     @FXML private StackPane cardPopupOverlay;
     @FXML private Label cardTitleLabel;
     @FXML private Label cardEffectLabel;
+    @FXML private Pane mainRootPane;
     
     // --- STATE VARIABLES ---
     private Game game;
@@ -97,10 +100,13 @@ public class BoardController {
 
         playerToken.setFitWidth(30); playerToken.setFitHeight(30);
         opponentToken.setFitWidth(30); opponentToken.setFitHeight(30);
+        
+     // Remove the old "token-shadow" class and add the new specific ones
+        playerToken.getStyleClass().clear();
+        playerToken.getStyleClass().add("player-glow");
 
-        // Uses the new CSS class instead of inline styles
-        playerToken.getStyleClass().add("token-shadow");
-        opponentToken.getStyleClass().add("token-shadow");
+        opponentToken.getStyleClass().clear();
+        opponentToken.getStyleClass().add("opponent-glow");
 
         updateTokenPositions();
         updateDashboards();
@@ -137,28 +143,136 @@ public class BoardController {
     // --- GAMEPLAY LOOP ---
     @FXML
     private void handleRollDice(ActionEvent event) {
+        // 1. CAPTURE THE "BEFORE" SNAPSHOT
+        Monster activeMonster = game.getCurrent();
+        Monster opponent = game.getCurrent() == game.getPlayer() ? game.getOpponent() : game.getPlayer();
+        
+        int oldPos = activeMonster.getPosition();
+        int oldEnergy = activeMonster.getEnergy();
+        int oldOppEnergy = opponent.getEnergy();
+
         try {
-            Monster activeMonster = game.getCurrent();
-            game.playTurn(); 
-            gameLogLabel.setText(activeMonster.getName() + " rolled the dice and moved!");
+            // 2. PLAY THE TURN
+            int roll = game.playTurn();
+
+            if (roll == 0) {
+                gameLogLabel.setText("❄️ " + activeMonster.getName() + " is frozen and skipped their turn!");
+                updateDashboards();
+                return;
+            }
+
+// ... inside handleRollDice ...
             
-            Card drawnCard = Board.getLastDrawnCard(); 
+            // 3. CAPTURE THE "AFTER" SNAPSHOT
+         // 3. CAPTURE THE "AFTER" SNAPSHOT
+            int newPos = activeMonster.getPosition();
+            int newEnergy = activeMonster.getEnergy();
+            int newOppEnergy = opponent.getEnergy();
+            Card drawnCard = Board.getLastDrawnCard();
+
+            // --- CALCULATE EXACT DESTINATION ---
+            int expectedMove = roll; 
             
-            if (drawnCard != null) {
-                showCardPopup("Card Drawn!", getCardDescription(drawnCard));
-                
-                // Erase it from the engine so it doesn't trigger again next turn
-                Board.clearLastDrawnCard(); 
+            if (activeMonster instanceof Dasher) { 
+                Dasher m = (Dasher) activeMonster;
+                expectedMove = m.getMomentumTurns() > 0 ? roll * 3 : roll * 2;
+            } else if (activeMonster instanceof MultiTasker) { 
+                MultiTasker m = (MultiTasker) activeMonster;
+                if (m.getNormalSpeedTurns() == 0) {
+                    expectedMove = roll / 2;
+                }
             }
             
+            // Apply Wrap-Around Logic!
+            int expectedPos = (oldPos + expectedMove) % 100; // or % Constants.BOARD_SIZE
+            
+            // THE BRILLIANT FIX: Just look at the cell they landed on!
+            // (Adjust the getter below to match your actual Board class architecture)
+            int cols = Constants.BOARD_COLS;
+
+    	    int row = expectedPos/ cols;
+    	    int col = expectedPos % cols;
+
+    	    if (row % 2 == 1)
+    	        col = cols - 1 - col;
+
+            Cell landedCell = game.getBoard().getBoardCells()[row][col]; 
+
+            // 4. BUILD THE SMART LOG
+            StringBuilder log = new StringBuilder("🎲 " + activeMonster.getName() + " rolled a " + roll + ". ");
+
+            // Check exactly what they stepped on
+            if (landedCell instanceof CardCell && drawnCard != null) {
+                log.append("🃏 Landed on a Card Cell! Drew a ").append(drawnCard.getName()).append("! ");
+                showCardPopup("Card Drawn!", getCardDescription(drawnCard));
+                Board.clearLastDrawnCard();
+                
+            } else if (landedCell instanceof ConveyorBelt) {
+                log.append("🚀 Hit a Conveyor Belt! Taken to Cell ").append(newPos).append(". ");
+                
+            } else if (landedCell instanceof ContaminationSock) {
+                log.append("🧦 Hit a Contamination Sock! Taken to Cell ").append(newPos).append(". ");
+                
+            } else if (landedCell instanceof MonsterCell) {
+                log.append("👾 Landed on a Monster Cell! ");
+                if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
+                    log.append("Energies Swapped! "); // Or write logic to check if they got a free powerup
+                }
+                
+            } else if (landedCell instanceof DoorCell) {
+                log.append("🚪 Landed on a Door! ");
+                
+            } else {
+                log.append("Landed safely on Cell ").append(newPos).append(". ");
+            }
+
+            // --- REPORT UNIVERSAL ENERGY CHANGES ---
+            // Because Socks, Doors, and Cards can all change energy, we just append the result at the end
+            int energyDiff = newEnergy - oldEnergy;
+            
+            if (energyDiff > 0 && !(landedCell instanceof MonsterCell)) {
+                log.append("🔋 Gained ").append(energyDiff).append(" Energy.");
+            } else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
+                log.append("💥 Lost ").append(Math.abs(energyDiff)).append(" Energy.");
+            }
+
+            // 5. FINALIZE UI
+            gameLogLabel.setText(log.toString().trim());
             updateDashboards();
-            updateTokenPositions(); 
+            updateTokenPositions();
             updateDoorVisuals();
             updateCardVisuals();
-            checkWinCondition();               
+            checkWinCondition();                
 
         } catch (InvalidMoveException e) {
+            // 6. CATCH OCCUPIED CELL COLLISIONS (AND GHOST PENALTIES)
+            int failedRoll = game.getLastRoll(); 
+            StringBuilder errorLog = new StringBuilder("🚫 " + activeMonster.getName() + " rolled a " + failedRoll + " but crashed into the opponent! ");
+            
+            // Did they lose energy from a Sock/Mismatch Door before crashing?
+            int currentEnergy = activeMonster.getEnergy();
+            if (currentEnergy < oldEnergy) {
+                errorLog.append("💥 Still lost ").append(oldEnergy - currentEnergy).append(" Energy from the cell trap! ");
+            }
+            
+            // Did they burn a card before crashing?
+            Card burntCard = Board.getLastDrawnCard();
+            if (burntCard != null) {
+                errorLog.append("🃏 Burnt a ").append(burntCard.getName()).append(" in the process! ");
+                Board.clearLastDrawnCard(); // CRITICAL: Clear it so it doesn't bleed into the next turn!
+            }
+
+            errorLog.append("Roll again.");
+            gameLogLabel.setText(errorLog.toString());
+            
+            // Update EVERYTHING, not just dashboards, because doors/cards might have been exhausted
+            updateDashboards(); 
+            updateTokenPositions(); // Make sure they visually snap back to oldPosition
+            updateDoorVisuals();
+            updateCardVisuals();
+            
             showErrorPopup("Invalid Move: " + e.getMessage());
+            
         } catch (Exception e) {
             showErrorPopup("An error occurred: " + e.getMessage());
         }
@@ -207,6 +321,16 @@ public class BoardController {
     private void updateDashboards() {
         Monster p = game.getPlayer();
         Monster o = game.getOpponent();
+        Monster c = game.getCurrent();
+
+        // Dynamically update the top headers!
+        if (c == p) {
+            pTitleLabel.setText("▶ PLAYER\n (YOUR TURN)");
+            oTitleLabel.setText("OPPONENT");
+        } else {
+            pTitleLabel.setText("PLAYER");
+            oTitleLabel.setText("▶ OPPONENT\n (YOUR TURN)");
+        }
 
         pNameLabel.setText("Name: " + p.getName());
         pTypeLabel.setText("Type: " + getMonsterTypeString(p)); 
@@ -239,8 +363,12 @@ public class BoardController {
         StringBuilder status = new StringBuilder();
         
         // Generic Statuses
-        if (m.isFrozen()) status.append("❄️ Frozen\n");
-        if (m.isConfused()) status.append("🌀 Confused\n"); 
+        if (m.isFrozen()) status.append("❄️ Frozen (1 turn left)\n");
+        if (m.isConfused()) {
+        	int turns = m.getConfusionTurns();
+        	if (turns > 0)
+        		status.append("🌀 Confused (").append(turns).append(" left)\n");
+        }
         if (m.isShielded()) status.append("🛡️ Shielded\n");
         
         // Specific Powerup Buffs
@@ -254,7 +382,7 @@ public class BoardController {
             if (turns > 0) status.append("🎯 Focus Mode (").append(turns).append(" left)\n");
         }
         
-        return status.length() == 0 ? "None" : status.toString();
+        return status.length() == 0 ? "Currently, no special effects are applied!" : status.toString();
     }
     private String getMonsterAbilities(Monster m) {
         if (m instanceof Dynamo) {
@@ -305,6 +433,8 @@ public class BoardController {
             StackPane.setAlignment(playerToken, Pos.CENTER_LEFT);
             StackPane.setAlignment(opponentToken, Pos.CENTER_RIGHT);
         } else {
+        	playerToken.setFitWidth(50); playerToken.setFitHeight(50);
+            opponentToken.setFitWidth(50); opponentToken.setFitHeight(50);
             StackPane.setAlignment(playerToken, Pos.CENTER);
             StackPane.setAlignment(opponentToken, Pos.CENTER);
         }
@@ -326,8 +456,14 @@ public class BoardController {
             if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
 
             if (cells[row][col] instanceof DoorCell && ((DoorCell) cells[row][col]).isActivated()) {
-                cellViews[i].setEffect(exhaustedEffect);
-                cellViews[i].setOpacity(0.5);
+            	for (Node node : cellViews[i].getChildren()) {
+                    
+                    // Only gray it out if it is NOT one of the player tokens
+                    if (node != playerToken && node != opponentToken) {
+                        node.setEffect(exhaustedEffect);
+                        node.setOpacity(0.5);
+                    }
+            	}
             }
         }
     }
@@ -345,12 +481,22 @@ public class BoardController {
             if (cells[row][col] instanceof CardCell) {
                 // Check the static tracker in your Board class
                 if (Board.isCardCellExhausted(i)) {
-                    cellViews[i].setEffect(exhaustedEffect);
-                    cellViews[i].setOpacity(0.5);
+                	for (Node node : cellViews[i].getChildren()) {
+                        
+                        // Only gray it out if it is NOT one of the player tokens
+                        if (node != playerToken && node != opponentToken) {
+                            node.setEffect(exhaustedEffect);
+                            node.setOpacity(0.5);
+                        }
+                    }
                 } else {
                     // RESTORE COLOR: Safely clears effects when the deck gets reshuffled!
-                    cellViews[i].setEffect(null);
-                    cellViews[i].setOpacity(1.0);
+                	for (Node node : cellViews[i].getChildren()) {
+                        if (node != playerToken && node != opponentToken) {
+                            node.setEffect(null);
+                            node.setOpacity(1.0);
+                        }
+                	}
                 }
             }
         }
@@ -545,5 +691,25 @@ public class BoardController {
         boardGrid.setDisable(false);
         btnRollDice.setDisable(false);
         btnPowerup.setDisable(false);
+    }
+    @FXML
+    private void handleShowRules(javafx.event.ActionEvent event) {
+        try {
+            // 1. Load the rules FXML (Make sure the path matches where you saved it!)
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/popup_rules.fxml"));
+            StackPane rulesPopup = loader.load();
+            
+            // 2. Make sure it completely covers the board
+            rulesPopup.prefWidthProperty().bind(mainRootPane.widthProperty());
+            rulesPopup.prefHeightProperty().bind(mainRootPane.heightProperty());
+            
+            // 3. Add it to the very front of the screen
+            mainRootPane.getChildren().add(rulesPopup);
+            rulesPopup.toFront();
+            
+        } catch (Exception e) {
+            System.err.println("Could not load rules popup!");
+            e.printStackTrace();
+        }
     }
 }

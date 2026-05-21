@@ -162,8 +162,6 @@ public class Board {
 	        getCell(landingPos).onLand(currentMonster, opponentMonster);
 	    }
 
-	    getCell(currentMonster.getPosition()).onLand(currentMonster, opponentMonster);
-
 	    if (currentMonster.getPosition() == opponentMonster.getPosition()) {
 	        currentMonster.setPosition(oldPosition);
 	        throw new InvalidMoveException("Cannot land on opponent!");

@@ -16,6 +16,7 @@ public class Game {
 	private Monster player;
 	private Monster opponent;
 	private Monster current;
+	private int lastRoll = 0;
 	
 	public Game(Role playerRole) throws IOException {
 		this.board = new Board(DataLoader.readCards());
@@ -52,6 +53,9 @@ public class Game {
 	public Monster getCurrent() {
 		return current;
 	}
+	public int getLastRoll() {
+        return lastRoll;
+    }
 	
 	public void setCurrent(Monster current) {
 		this.current = current;
@@ -82,19 +86,20 @@ public class Game {
 		current.setEnergy(current.getEnergy() - Constants.POWERUP_COST);
 	}
 	
-	public void playTurn() throws InvalidMoveException {
+	public int playTurn() throws InvalidMoveException {
 		if (current.isFrozen()) {
 			System.out.println(current.getName() + " is frozen! Turn skipped.");
 			current.setFrozen(false);
 			switchTurn();
-			return;
+			return 0;
 		}
 		
-		int roll = rollDice();
+		lastRoll = rollDice();
 		
-		board.moveMonster(current, roll, getCurrentOpponent());
+		board.moveMonster(current, lastRoll, getCurrentOpponent());
 		
 		switchTurn();
+		return lastRoll;
 	}
 	
 	private void switchTurn() {
