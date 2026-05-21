@@ -2,6 +2,7 @@
    DASHBOARDS (Left & Right Player Stats)
    ======================================================== */
 .dashboard-vbox {
+	-fx-font-size: 18px;
     -fx-background-color: #f4f4f8; /* Softer, modern off-white */
     -fx-padding: 15px; /* Slightly more breathing room */
     -fx-border-color: #d1d1e0;
@@ -13,17 +14,6 @@
     -fx-font-size: 22px;
     -fx-text-fill: #2c3e50;
     -fx-alignment: center;
-}
-
-/* Optional themes you can apply dynamically in Java based on Role */
-.dashboard-scarer {
-    -fx-background-color: #e3f2fd; /* Sully blue tint */
-    -fx-border-color: #1976d2;
-}
-
-.dashboard-laugher {
-    -fx-background-color: #f1f8e9; /* Mike green tint */
-    -fx-border-color: #689f38;
 }
 
 /* ========================================================
@@ -102,6 +92,12 @@
     -fx-background-radius: 4px;
     -fx-translate-y: -2px; /* Pull it slightly up from the absolute bottom edge */
 }
-.token-shadow {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 5, 0, 0, 0);
+/* Creates a cyan glow */
+.player-glow {
+    -fx-effect: dropshadow(three-pass-box, cyan, 15, 0.6, 0, 0);
+}
+
+/* Creates a crimson glow */
+.opponent-glow {
+    -fx-effect: dropshadow(three-pass-box, crimson, 15, 0.6, 0, 0);
 }

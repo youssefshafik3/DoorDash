@@ -7,10 +7,11 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.controller.BoardController">
+<StackPane fx:id="mainRootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.controller.BoardController">
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <center>
@@ -25,7 +26,7 @@
          <left>
             <VBox fx:id="playerDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
                <children>
-                  <Label styleClass="dashboard-title" text="Player" />
+                  <Label fx:id="pTitleLabel" styleClass="dashboard-title" text="Player" />
                   <Label fx:id="pNameLabel" text="Name" />
                   <Label fx:id="pTypeLabel" text="Type" />
                   <Label fx:id="pOriginalRoleLabel" text="Original Role" />
@@ -33,13 +34,13 @@
                   <Label fx:id="pAbilityLabel" text="Abilities" wrapText="true" />
                   <Label fx:id="pEnergyLabel" text="Energy" />
                   <Label fx:id="pPositionLabel" text="Position" />
-                  <Label fx:id="pStatusLabel" text="Status" />
+                  <Label fx:id="pStatusLabel" text="Status" wrapText="true" />
                </children></VBox>
          </left>
          <right>
             <VBox fx:id="opponentDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
                <children>
-                  <Label styleClass="dashboard-title" text="Opponent" />
+                  <Label fx:id="oTitleLabel" styleClass="dashboard-title" text="Opponent" />
                   <Label fx:id="oNameLabel" text="Name" />
                   <Label fx:id="oTypeLabel" text="Type" />
                   <Label fx:id="oOriginalRoleLabel" text="Original Role" />
@@ -47,16 +48,21 @@
                   <Label fx:id="oAbilityLabel" text="Abilities" wrapText="true" />
                   <Label fx:id="oEnergyLabel" text="Energy" />
                   <Label fx:id="oPositionLabel" text="Position" />
-                  <Label fx:id="oStatusLabel" text="Status" />
+                  <Label fx:id="oStatusLabel" text="Status" wrapText="true" />
                </children></VBox>
          </right>
          <bottom>
-            <HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" styleClass="action-bar" BorderPane.alignment="CENTER">
-               <children>
-                  <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" text="Use PowerUp" />
-                  <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" text="Roll Dice" />
-                  <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" />
-               </children></HBox>
+<HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" styleClass="action-bar" BorderPane.alignment="CENTER">
+    <children>
+        <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" text="Use PowerUp" />
+        <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" text="Roll Dice" />
+        <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" wrapText="true" />
+        
+        <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
+        
+        <Button mnemonicParsing="false" onAction="#handleShowRules" text="RULES" />
+    </children>
+</HBox>
          </bottom>
       </BorderPane>
       <StackPane fx:id="errorPopupOverlay" prefHeight="150.0" prefWidth="200.0" styleClass="popup-overlay" visible="false">
