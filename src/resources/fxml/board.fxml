@@ -17,7 +17,7 @@
          <center>
             <StackPane BorderPane.alignment="CENTER">
                <children>
-                  <GridPane fx:id="boardGrid" alignment="CENTER">
+                  <GridPane id="boardGrid" fx:id="boardGrid" alignment="CENTER">
             </GridPane>
                   <Pane fx:id="overlayPane" mouseTransparent="true" prefHeight="500.0" prefWidth="500.0" />
                </children>
@@ -27,14 +27,14 @@
             <VBox fx:id="playerDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
                <children>
                   <Label fx:id="pTitleLabel" styleClass="dashboard-title" text="Player" />
-                  <Label fx:id="pNameLabel" text="Name" />
-                  <Label fx:id="pTypeLabel" text="Type" />
-                  <Label fx:id="pOriginalRoleLabel" text="Original Role" />
-                  <Label fx:id="pCurrentRoleLabel" text="Current Role" />
-                  <Label fx:id="pAbilityLabel" text="Abilities" wrapText="true" />
-                  <Label fx:id="pEnergyLabel" text="Energy" />
+                  <Label fx:id="pNameLabel" styleClass="stat-value" text="Name" />
+                  <Label fx:id="pTypeLabel" styleClass="stat-value" text="Type" />
+                  <Label fx:id="pOriginalRoleLabel" styleClass="stat-value" text="Original Role" />
+                  <Label fx:id="pCurrentRoleLabel" styleClass="stat-value" text="Current Role" />
+                  <Label fx:id="pAbilityLabel" styleClass="stat-ability" text="Abilities" wrapText="true" />
+                  <Label fx:id="pEnergyLabel" styleClass="stat-energy" text="Energy" />
                   <Label fx:id="pPositionLabel" text="Position" />
-                  <Label fx:id="pStatusLabel" text="Status" wrapText="true" />
+                  <Label fx:id="pStatusLabel" styleClass="stat-status" text="Status" wrapText="true" />
                           <VBox layoutX="50" layoutY="50" spacing="5">
     
     <StackPane fx:id="cardPileContainer" prefHeight="120" prefWidth="80" />
@@ -45,26 +45,26 @@
             <VBox fx:id="opponentDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
                <children>
                   <Label fx:id="oTitleLabel" styleClass="dashboard-title" text="Opponent" />
-                  <Label fx:id="oNameLabel" text="Name" />
-                  <Label fx:id="oTypeLabel" text="Type" />
-                  <Label fx:id="oOriginalRoleLabel" text="Original Role" />
-                  <Label fx:id="oCurrentRoleLabel" text="Current Role" />
-                  <Label fx:id="oAbilityLabel" text="Abilities" wrapText="true" />
-                  <Label fx:id="oEnergyLabel" text="Energy" />
+                  <Label fx:id="oNameLabel" styleClass="stat-value" text="Name" />
+                  <Label fx:id="oTypeLabel" styleClass="stat-value" text="Type" />
+                  <Label fx:id="oOriginalRoleLabel" styleClass="stat-value" text="Original Role" />
+                  <Label fx:id="oCurrentRoleLabel" styleClass="stat-value" text="Current Role" />
+                  <Label fx:id="oAbilityLabel" styleClass="stat-ability" text="Abilities" wrapText="true" />
+                  <Label fx:id="oEnergyLabel" styleClass="stat-energy" text="Energy" />
                   <Label fx:id="oPositionLabel" text="Position" />
-                  <Label fx:id="oStatusLabel" text="Status" wrapText="true" />
+                  <Label fx:id="oStatusLabel" styleClass="stat-status" text="Status" wrapText="true" />
                </children></VBox>
          </right>
          <bottom>
 <HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" styleClass="action-bar" BorderPane.alignment="CENTER">
     <children>
-        <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" styleClass="game Button" text="Use PowerUp" />
-        <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" styleClass="game Button" text="Roll Dice" />
-                  <Label fx:id="gameLogLabel" text="Label" textFill="#f2ecec" />
+        <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" styleClass="game-button-secondary" text="Use PowerUp" />
+        <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" styleClass="game-button" text="Roll Dice" />
+                  <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" textFill="#f2ecec" />
         
         <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
         
-        <Button mnemonicParsing="false" onAction="#handleShowRules" styleClass="game Button" text="RULES" />
+        <Button mnemonicParsing="false" onAction="#handleShowRules" styleClass="game-button-secondary" text="RULES" />
     </children>
 </HBox>
          </bottom>
@@ -74,7 +74,7 @@
             <VBox maxHeight="150.0" maxWidth="300.0" prefHeight="200.0" prefWidth="100.0" styleClass="popup-box">
                <children>
                   <Label fx:id="errorPopupMessage" styleClass="popup-text" text="Text" />
-                  <Button mnemonicParsing="false" onAction="#hideErrorPopup" styleClass="close-button" text="OK" />
+                  <Button mnemonicParsing="false" onAction="#closeActivePopup" styleClass="close-button" text="OK" />
                </children>
             </VBox>
          </children>
@@ -85,7 +85,7 @@
                <children>
                   <Label fx:id="cardTitleLabel" styleClass="popup-text" text="Label" />
                   <Label fx:id="cardEffectLabel" styleClass="popup-text" text="Label" />
-                  <Button mnemonicParsing="false" onAction="#hideCardPopup" styleClass="close-button" text="OK" />
+                  <Button mnemonicParsing="false" onAction="#closeActivePopup" styleClass="close-button" text="OK" />
                </children>
             </VBox>
          </children>

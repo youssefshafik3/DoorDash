@@ -1,42 +1,17 @@
 package game.controller;
-import javafx.animation.FadeTransition;
-import javafx.scene.Node;
-import javafx.animation.*;
-import javafx.geometry.Bounds;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
-import java.util.HashMap;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.ScaleTransition;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.transform.Rotate;
-import javafx.util.Duration;
-import java.util.Map;
-import javafx.animation.*;
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
-import javafx.scene.layout.StackPane;
-import javafx.scene.shape.Rectangle;
-import javafx.util.Duration;
 
+// --- CLEANED IMPORTS ---
 import game.engine.Board;
 import game.engine.Constants;
 import game.engine.Game;
 import game.engine.Role;
 import game.engine.cards.*;
-import game.engine.cells.CardCell;
 import game.engine.cells.*;
 import game.engine.exceptions.InvalidMoveException;
 import game.engine.exceptions.OutOfEnergyException;
 import game.engine.monsters.*;
+
+import javafx.animation.*;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -49,66 +24,64 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
-import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.QuadCurve;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.animation.FadeTransition;
-import javafx.animation.Interpolator;
-import javafx.animation.ScaleTransition;
-import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
+
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
 public class BoardController {
-    
-    // --- FXML INJECTIONS ---
-	
+
+    // ==========================================
+    // 1. FXML INJECTIONS & STATE
+    // ==========================================
     @FXML private GridPane boardGrid;
     @FXML private Pane overlayPane;
-    @FXML private Label pTitleLabel,pNameLabel, pTypeLabel, pOriginalRoleLabel, pCurrentRoleLabel, pEnergyLabel, pPositionLabel, pStatusLabel, pAbilityLabel;
-    @FXML private Label oTitleLabel,oNameLabel, oTypeLabel, oOriginalRoleLabel, oCurrentRoleLabel, oEnergyLabel, oPositionLabel, oStatusLabel, oAbilityLabel;
+    @FXML private Label pTitleLabel, pNameLabel, pTypeLabel, pOriginalRoleLabel, pCurrentRoleLabel, pEnergyLabel, pPositionLabel, pStatusLabel, pAbilityLabel;
+    @FXML private Label oTitleLabel, oNameLabel, oTypeLabel, oOriginalRoleLabel, oCurrentRoleLabel, oEnergyLabel, oPositionLabel, oStatusLabel, oAbilityLabel;
     @FXML private Button btnRollDice, btnPowerup;
     @FXML private Label gameLogLabel;
     @FXML private StackPane errorPopupOverlay;
     @FXML private Label errorPopupMessage;
-    @FXML private StackPane cardPopupOverlay;
-    @FXML private Label cardTitleLabel;
-    @FXML private Label cardEffectLabel;
     @FXML private StackPane mainRootPane;
-    @FXML private VBox playerDashboard;
+    @FXML private VBox playerDashboard,opponentDashboard;
     @FXML private StackPane cardPileContainer;
-    
-    // --- STATE VARIABLES ---
- // Keeps the music alive so the garbage collector doesn't mute it!
-    private javafx.scene.media.MediaPlayer backgroundMusicPlayer;
+
+    private MediaPlayer backgroundMusicPlayer;
     private Game game;
     private Image sockImg, cardImg, conveyorImg;
     private Image[] doorImages;
     private final Map<String, Image> monsterImages = new HashMap<>();
     private StackPane[] cellViews = new StackPane[100]; 
     private ImageView playerToken, opponentToken;
- // Track the number of cards left in the active drawing pile
     private int cardsRemaining = 25;
     private Label cardPileLabel;
-    // --- INITIALIZATION ---
+
+
+    // ==========================================
+    // 2. INITIALIZATION
+    // ==========================================
     public void initData(Game initializedGame) {
         this.game = initializedGame;
         
@@ -138,49 +111,40 @@ public class BoardController {
         
         buildGrid();
         initCardPile();
+        
         playerToken = new ImageView(monsterImages.get(game.getPlayer().getName()));
         opponentToken = new ImageView(monsterImages.get(game.getOpponent().getName()));
-
         playerToken.setFitWidth(30); playerToken.setFitHeight(30);
         opponentToken.setFitWidth(30); opponentToken.setFitHeight(30);
         
-     // Remove the old "token-shadow" class and add the new specific ones
         playerToken.getStyleClass().clear();
         playerToken.getStyleClass().add("player-glow");
-
         opponentToken.getStyleClass().clear();
         opponentToken.getStyleClass().add("opponent-glow");
 
-        updateTokenPositions();
-        updateDashboards();
-        drawTransportArrows();
         cardPileLabel = new Label("🃏 CARDS PILE: 25 / 25 LEFT");
         cardPileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 16px; -fx-padding: 10px;");
         cardPileLabel.setWrapText(true);
-        startBackgroundMusic();
-        // 👉 2. ADD IT TO THE DASHBOARD
         playerDashboard.getChildren().add(cardPileLabel);
+        
+        refreshAllUI();
         updateCardPileUI();
-        // Wait for the scene to load, then attach the cheat keys
+        drawTransportArrows();
+        startBackgroundMusic();
+        
         Platform.runLater(this::setupDebugControls);
     }
     
-    // --- CHEAT KEYS (Milestone Requirement) ---
     private void setupDebugControls() {
         if (boardGrid.getScene() != null) {
             boardGrid.getScene().setOnKeyPressed((KeyEvent event) -> {
-                
-                // [W]: INSTANT WIN
                 if (event.getCode() == KeyCode.W) {
                     triggerGameOver(game.getPlayer().getName(), game.getPlayer().getRole().toString(), "#00ffcc");
-                }
-                
-                // [E]: INCREASE ENERGY (Active Player)
-                else if (event.getCode() == KeyCode.E) {
+                } else if (event.getCode() == KeyCode.E) {
                     try {
                         Monster active = game.getCurrent();
-                        active.setEnergy(active.getEnergy() + 20); // Adds 20 directly to engine
-                        updateDashboards(); // Refreshes UI to show new energy
+                        active.setEnergy(active.getEnergy() + 20); 
+                        refreshAllUI();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -189,10 +153,12 @@ public class BoardController {
         }
     }
 
-    // --- GAMEPLAY LOOP ---
+
+    // ==========================================
+    // 3. CORE GAME LOOP
+    // ==========================================
     @FXML
     private void handleRollDice(ActionEvent event) {
-        // 1. CAPTURE THE "BEFORE" SNAPSHOT
         Monster activeMonster = game.getCurrent();
         Monster opponent = game.getCurrent() == game.getPlayer() ? game.getOpponent() : game.getPlayer();
         
@@ -201,27 +167,19 @@ public class BoardController {
         int oldOppEnergy = opponent.getEnergy();
 
         try {
-            // 2. PLAY THE TURN
             int roll = game.playTurn();
 
             if (roll == 0) {
                 gameLogLabel.setText("❄️ " + activeMonster.getName() + " is frozen and skipped their turn!");
-                updateDashboards();
                 return;
             }
 
-// ... inside handleRollDice ...
-            
-            // 3. CAPTURE THE "AFTER" SNAPSHOT
-         // 3. CAPTURE THE "AFTER" SNAPSHOT
             int newPos = activeMonster.getPosition();
             int newEnergy = activeMonster.getEnergy();
             int newOppEnergy = opponent.getEnergy();
             Card drawnCard = Board.getLastDrawnCard();
 
-            // --- CALCULATE EXACT DESTINATION ---
             int expectedMove = roll; 
-            
             if (activeMonster instanceof Dasher) { 
                 Dasher m = (Dasher) activeMonster;
                 expectedMove = m.getMomentumTurns() > 0 ? roll * 3 : roll * 2;
@@ -232,101 +190,69 @@ public class BoardController {
                 }
             }
             
-            // Apply Wrap-Around Logic!
-            int expectedPos = (oldPos + expectedMove) % 100; // or % Constants.BOARD_SIZE
-            
-            // THE BRILLIANT FIX: Just look at the cell they landed on!
-            // (Adjust the getter below to match your actual Board class architecture)
+            int expectedPos = (oldPos + expectedMove) % Constants.BOARD_SIZE;
             int cols = Constants.BOARD_COLS;
-
-    	    int row = expectedPos/ cols;
+    	    int row = expectedPos / cols;
     	    int col = expectedPos % cols;
-
-    	    if (row % 2 == 1)
-    	        col = cols - 1 - col;
+    	    if (row % 2 == 1) col = cols - 1 - col;
 
             Cell landedCell = game.getBoard().getBoardCells()[row][col]; 
-
-            // 4. BUILD THE SMART LOG
             StringBuilder log = new StringBuilder("🎲 " + activeMonster.getName() + " rolled a " + roll + ". ");
 
-            // Check exactly what they stepped on
             if (landedCell instanceof CardCell && drawnCard != null) {
                 log.append("🃏 Landed on a Card Cell! Drew a ").append(drawnCard.getName()).append("! ");
                 animateCardFromPile(getCardDescription(drawnCard));
                 removeTopCardFromPile();
-
                 Board.clearLastDrawnCard();
                 decrementCardPile();
-                
             } else if (landedCell instanceof ConveyorBelt) {
                 log.append("🚀 Hit a Conveyor Belt! Taken to Cell ").append(newPos).append(". ");
-                
             } else if (landedCell instanceof ContaminationSock) {
                 log.append("🧦 Hit a Contamination Sock! Taken to Cell ").append(newPos).append(". ");
-                
             } else if (landedCell instanceof MonsterCell) {
                 log.append("👾 Landed on a Monster Cell! ");
                 if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
-                    log.append("Energies Swapped! "); // Or write logic to check if they got a free powerup
+                    log.append("Energies Swapped! ");
                 }
-                
             } else if (landedCell instanceof DoorCell) {
                 log.append("🚪 Landed on a Door! ");
-                
             } else {
                 log.append("Landed safely on Cell ").append(newPos).append(". ");
             }
 
-            // --- REPORT UNIVERSAL ENERGY CHANGES ---
-            // Because Socks, Doors, and Cards can all change energy, we just append the result at the end
             int energyDiff = newEnergy - oldEnergy;
-            
             if (energyDiff > 0 && !(landedCell instanceof MonsterCell)) {
                 log.append("🔋 Gained ").append(energyDiff).append(" Energy.");
             } else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
                 log.append("💥 Lost ").append(Math.abs(energyDiff)).append(" Energy.");
             }
 
-            // 5. FINALIZE UI
             gameLogLabel.setText(log.toString().trim());
-            updateDashboards();
-            updateTokenPositions();
-            updateDoorVisuals();
-            updateCardVisuals();
             checkWinCondition();                
 
         } catch (InvalidMoveException e) {
-            // 6. CATCH OCCUPIED CELL COLLISIONS (AND GHOST PENALTIES)
             int failedRoll = game.getLastRoll(); 
-            StringBuilder errorLog = new StringBuilder("🚫 " + activeMonster.getName() + " rolled a " + failedRoll + " but crashed into the opponent! ");
+            StringBuilder errorLog = new StringBuilder("🚫 " + activeMonster.getName() + " rolled a " + failedRoll + " but crashed! ");
             
-            // Did they lose energy from a Sock/Mismatch Door before crashing?
             int currentEnergy = activeMonster.getEnergy();
             if (currentEnergy < oldEnergy) {
-                errorLog.append("💥 Still lost ").append(oldEnergy - currentEnergy).append(" Energy from the cell trap! ");
+                errorLog.append("💥 Lost ").append(oldEnergy - currentEnergy).append(" Energy from trap! ");
             }
             
-            // Did they burn a card before crashing?
             Card burntCard = Board.getLastDrawnCard();
             if (burntCard != null) {
-                errorLog.append("🃏 Burnt a ").append(burntCard.getName()).append(" in the process! ");
-                Board.clearLastDrawnCard(); // CRITICAL: Clear it so it doesn't bleed into the next turn!
+                errorLog.append("🃏 Burnt a ").append(burntCard.getName()).append("! ");
+                Board.clearLastDrawnCard(); 
             }
 
             errorLog.append("Roll again.");
             gameLogLabel.setText(errorLog.toString());
-            
-            // Update EVERYTHING, not just dashboards, because doors/cards might have been exhausted
-            updateDashboards(); 
-            updateTokenPositions(); // Make sure they visually snap back to oldPosition
-            updateDoorVisuals();
-            updateCardVisuals();
-            
             showErrorPopup("Invalid Move: " + e.getMessage());
             
         } catch (Exception e) {
             showErrorPopup("An error occurred: " + e.getMessage());
+        } finally {
+        	refreshAllUI();
         }
     }
 
@@ -336,26 +262,22 @@ public class BoardController {
             Monster activeMonster = game.getCurrent();
             game.usePowerup();
             
-            // Generate a specific, visual log message based on the monster's class
             if (activeMonster instanceof Dasher) {
                 gameLogLabel.setText("⚡ " + activeMonster.getName() + " activated Momentum Rush! (3x Speed)");
-            } 
-            else if (activeMonster instanceof MultiTasker) {
+            } else if (activeMonster instanceof MultiTasker) {
                 gameLogLabel.setText("🎯 " + activeMonster.getName() + " activated Focus Mode! (Normal Speed)");
-            } 
-            else if (activeMonster instanceof Dynamo) {
-                gameLogLabel.setText("❄️ " + activeMonster.getName() + " used Screech Freeze! Opponent skips next turn!");
-            } 
-            else if (activeMonster instanceof Schemer) {
-                gameLogLabel.setText("🦇 " + activeMonster.getName() + " used Chain Attack! Energy stolen from the oppnent and the board!");
+            } else if (activeMonster instanceof Dynamo) {
+                gameLogLabel.setText("❄️ " + activeMonster.getName() + " used Screech Freeze!");
+            } else if (activeMonster instanceof Schemer) {
+                gameLogLabel.setText("🦇 " + activeMonster.getName() + " used Chain Attack!");
             }
-            
-            updateDashboards(); 
             
         } catch (OutOfEnergyException e) {
             showErrorPopup("Cannot use powerup: " + e.getMessage());
         } catch (Exception e) {
             showErrorPopup("Error: " + e.getMessage());
+        } finally {
+        	refreshAllUI();
         }
     }
     
@@ -369,19 +291,34 @@ public class BoardController {
         }
     }
 
-    // --- UI UPDATERS ---
+
+    // ==========================================
+    // 4. UI UPDATERS (THE MACRO SYSTEM)
+    // ==========================================
+    private void refreshAllUI() {
+        updateDashboards();
+        updateTokenPositions();
+        updateDoorVisuals();
+        updateMonsterCellVisuals();
+    }
+
     private void updateDashboards() {
         Monster p = game.getPlayer();
         Monster o = game.getOpponent();
         Monster c = game.getCurrent();
-
-        // Dynamically update the top headers!
+        
+        playerDashboard.getStyleClass().remove("dashboard-active");
+        opponentDashboard.getStyleClass().remove("dashboard-active");
+        
         if (c == p) {
             pTitleLabel.setText("▶ PLAYER\n (YOUR TURN)");
             oTitleLabel.setText("OPPONENT");
+            playerDashboard.getStyleClass().add("dashboard-active");
+            
         } else {
             pTitleLabel.setText("PLAYER");
             oTitleLabel.setText("▶ OPPONENT\n (YOUR TURN)");
+            opponentDashboard.getStyleClass().add("dashboard-active");
         }
 
         pNameLabel.setText("Name: " + p.getName());
@@ -391,87 +328,16 @@ public class BoardController {
         pEnergyLabel.setText("Energy: " + p.getEnergy());
         pPositionLabel.setText("Position: Cell " + p.getPosition());
         pStatusLabel.setText(buildStatusString(p));
-        pAbilityLabel.setText(getMonsterAbilities(game.getPlayer()));
+        pAbilityLabel.setText(getMonsterAbilities(p));
         
-
         oNameLabel.setText("Name: " + o.getName());
         oTypeLabel.setText("Type: " + getMonsterTypeString(o)); 
-        oOriginalRoleLabel.setText("Original Role: " + o.getRole());
+        oOriginalRoleLabel.setText("Original Role: " + o.getOriginalRole());
         oCurrentRoleLabel.setText("Current Role: " + o.getRole());
         oEnergyLabel.setText("Energy: " + o.getEnergy());
         oPositionLabel.setText("Position: Cell " + o.getPosition());
         oStatusLabel.setText(buildStatusString(o));
-        oAbilityLabel.setText(getMonsterAbilities(game.getOpponent()));
-    }
-    
-    private String getMonsterTypeString(Monster m) {
-        if (m instanceof Dasher) return "Dasher";
-        if (m instanceof Dynamo) return "Dynamo";
-        if (m instanceof MultiTasker) return "Multitasker";
-        return "Schemer";
-    }
-
-    private String buildStatusString(Monster m) {
-        StringBuilder status = new StringBuilder();
-        
-        // Generic Statuses
-        if (m.isFrozen()) status.append("❄️ Frozen (1 turn left)\n");
-        if (m.isConfused()) {
-        	int turns = m.getConfusionTurns();
-        	if (turns > 0)
-        		status.append("🌀 Confused (").append(turns).append(" left)\n");
-        }
-        if (m.isShielded()) status.append("🛡️ Shielded\n");
-        
-        // Specific Powerup Buffs
-        if (m instanceof Dasher) {
-            int turns = ((Dasher) m).getMomentumTurns();
-            if (turns > 0) status.append("⚡ Momentum Rush (").append(turns).append(" left)\n");
-        }
-        
-        if (m instanceof MultiTasker) {
-            int turns = ((MultiTasker) m).getNormalSpeedTurns();
-            if (turns > 0) status.append("🎯 Focus Mode (").append(turns).append(" left)\n");
-        }
-        
-        return status.length() == 0 ? "Currently, no special effects are applied!" : status.toString();
-    }
-    private String getMonsterAbilities(Monster m) {
-        if (m instanceof Dynamo) {
-            return "⚡ Powerup: Screech Freeze (Freezes opponent for 1 turn)\n" +
-                   "✨ Passive: Doubles all incoming energy changes";
-        } 
-        else if (m instanceof Dasher) {
-            return "⚡ Powerup: Momentum Rush (3x speed for 3 turns)\n" +
-                   "✨ Passive: Always moves at 2x the dice roll";
-        } 
-        else if (m instanceof MultiTasker) {
-            return "⚡ Powerup: Focus Mode (Normal speed for 2 turns)\n" +
-                   "✨ Passive: Moves at 1/2 dice roll, +200 to all energy changes";
-        } 
-        else if (m instanceof Schemer) {
-            return "⚡ Powerup: Chain Attack (Steals energy from all stationed monsters)\n" +
-                   "✨ Passive: Gains +10 bonus to all energy changes";
-        }
-        return "No special abilities.";
-    }
-    private String getCardDescription(Card card) {
-        if (card instanceof SwapperCard) {
-            return "Swapper Card!\nIf you are behind, you will swapp positions with the opponent!";
-        } 
-        else if (card instanceof EnergyStealCard) {
-            return "Energy Steal!\n Opponent's Energy will be transferred to you (unless they have a shield!).";
-        } 
-        else if (card instanceof ShieldCard) {
-            return "Shield Card!\nYou will gain a shield against the next negative energy effect, and the opponent's shield will be destroyed if they have one.";
-        } 
-        else if (card instanceof StartOverCard) {
-            return "Start Over!\nSomeone will get sent all the way back to Cell 0!";
-        } 
-        else if (card instanceof ConfusionCard) {
-            return "Confusion!\nBoth monsters will swap roles! Doors will now have reversed effects.";
-        }
-        return "A mysterious card was drawn!";
+        oAbilityLabel.setText(getMonsterAbilities(o));
     }
     
     private void updateTokenPositions() {
@@ -503,14 +369,12 @@ public class BoardController {
 
         Cell[][] cells = game.getBoard().getBoardCells();
         for (int i = 0; i < Constants.BOARD_SIZE; i++) {
-            int row = i / Constants.BOARD_COLS;
-            int col = i % Constants.BOARD_COLS;
-            if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
+            int[] pos = indexToRowCol(i);
+            int row = pos[0];
+            int col = pos[1];
 
             if (cells[row][col] instanceof DoorCell && ((DoorCell) cells[row][col]).isActivated()) {
             	for (Node node : cellViews[i].getChildren()) {
-                    
-                    // Only gray it out if it is NOT one of the player tokens
                     if (node != playerToken && node != opponentToken) {
                         node.setEffect(exhaustedEffect);
                         node.setOpacity(0.5);
@@ -519,48 +383,38 @@ public class BoardController {
             }
         }
     }
-    private void updateCardVisuals() {
-        ColorAdjust exhaustedEffect = new ColorAdjust();
-        exhaustedEffect.setSaturation(-1.0); // Completely removes color (grayscale)
-        exhaustedEffect.setBrightness(-0.3); // Darkens the cell slightly
-
+    
+    private void updateMonsterCellVisuals() {
         Cell[][] cells = game.getBoard().getBoardCells();
         for (int i = 0; i < Constants.BOARD_SIZE; i++) {
-            int row = i / Constants.BOARD_COLS;
-            int col = i % Constants.BOARD_COLS;
-            if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
+        	int[] pos = indexToRowCol(i);
+            int row = pos[0];
+            int col = pos[1];
 
-            if (cells[row][col] instanceof CardCell) {
-                // Check the static tracker in your Board class
-                if (Board.isCardCellExhausted(i)) {
-                	for (Node node : cellViews[i].getChildren()) {
-                        
-                        // Only gray it out if it is NOT one of the player tokens
-                        if (node != playerToken && node != opponentToken) {
-                            node.setEffect(exhaustedEffect);
-                            node.setOpacity(0.5);
-                        }
+            if (cells[row][col] instanceof MonsterCell) {
+                MonsterCell mCell = (MonsterCell) cells[row][col];
+                String currentEnergy = mCell.getCellMonster().getEnergy() + ""; 
+
+                for (Node node : cellViews[i].getChildren()) {
+                    if (node instanceof Label && node.getStyleClass().contains("monster-energy-label")) {
+                        ((Label) node).setText(currentEnergy);
+                        break; 
                     }
-                } else {
-                    // RESTORE COLOR: Safely clears effects when the deck gets reshuffled!
-                	for (Node node : cellViews[i].getChildren()) {
-                        if (node != playerToken && node != opponentToken) {
-                            node.setEffect(null);
-                            node.setOpacity(1.0);
-                        }
-                	}
                 }
             }
         }
     }
 
-    // --- VISUAL BUILDERS & MATH ---
+
+    // ==========================================
+    // 5. ANIMATIONS & DYNAMIC BUILDERS
+    // ==========================================
     private void buildGrid() {
         Cell[][] cells = game.getBoard().getBoardCells();
         for (int i = 0; i < Constants.BOARD_SIZE; i++) {
-            int row = i / Constants.BOARD_COLS;
-            int col = i % Constants.BOARD_COLS;
-            if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
+        	int[] pos = indexToRowCol(i);
+            int row = pos[0];
+            int col = pos[1];
 
             int guiRow = (Constants.BOARD_ROWS - 1) - row;
             StackPane cellView = createCellView(cells[row][col], i);
@@ -578,24 +432,19 @@ public class BoardController {
         bgView.setFitWidth(60); bgView.setFitHeight(60);
         boolean addImage = true; 
 
-        // 1. FIXED: Removed the duplicate duplicate 'if' statement line here
         if (cell instanceof MonsterCell) {
             MonsterCell mCell = (MonsterCell) cell;
             String monsterName = mCell.getName().trim();
             Image specificMonsterImg = monsterImages.get(monsterName);
             
-            if (specificMonsterImg != null) {
-                bgView.setImage(specificMonsterImg);
-            } else {
-                System.err.println("Warning: No image found for monster " + monsterName);
-            }
+            if (specificMonsterImg != null) bgView.setImage(specificMonsterImg);
             
-            Label roleLbl = new Label(((MonsterCell) cell).getCellMonster().getRole() == Role.SCARER ? "S" : "L");
-            roleLbl.getStyleClass().add("door-role-label");
+            Label roleLbl = new Label(mCell.getCellMonster().getRole() == Role.SCARER ? "S" : "L");
+            roleLbl.getStyleClass().add("monster-role-label");
             StackPane.setAlignment(roleLbl, Pos.TOP_RIGHT); 
             
-            Label nrgLbl = new Label(((MonsterCell) cell).getCellMonster().getEnergy() + "");
-            nrgLbl.getStyleClass().add("door-energy-label");
+            Label nrgLbl = new Label(mCell.getCellMonster().getEnergy() + "");
+            nrgLbl.getStyleClass().add("monster-energy-label");
             StackPane.setAlignment(nrgLbl, Pos.BOTTOM_CENTER); 
             
             stack.getChildren().addAll(bgView, roleLbl, nrgLbl);
@@ -626,12 +475,8 @@ public class BoardController {
             addImage = false; 
         }
 
-        // 2. If the cell block didn't manually handle adding the bgView, add it now
-        if (addImage) {
-            stack.getChildren().add(bgView);
-        }
+        if (addImage) stack.getChildren().add(bgView);
 
-        // 3. Layer the cell index number on top of everything
         Label idxLbl = new Label(String.valueOf(index));
         idxLbl.getStyleClass().add("cell-index-label");
         StackPane.setAlignment(idxLbl, Pos.TOP_LEFT);
@@ -640,7 +485,6 @@ public class BoardController {
         return stack;
     }
         
-    
     private void drawTransportArrows() {
         Platform.runLater(() -> {
             overlayPane.maxWidthProperty().bind(boardGrid.widthProperty());
@@ -649,9 +493,9 @@ public class BoardController {
 
             Cell[][] cells = game.getBoard().getBoardCells();
             for (int i = 0; i < Constants.BOARD_SIZE; i++) {
-                int row = i / Constants.BOARD_COLS;
-                int col = i % Constants.BOARD_COLS;
-                if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
+            	int[] pos = indexToRowCol(i);
+                int row = pos[0];
+                int col = pos[1];
 
                 if (cells[row][col] instanceof ConveyorBelt) {
                     createArrowPath(i, Math.min(99, i + ((ConveyorBelt) cells[row][col]).getEffect()), Color.DARKORANGE);
@@ -683,213 +527,119 @@ public class BoardController {
         arrow.setFill(color);
         overlayPane.getChildren().addAll(curve, arrow);
     }
-
-    // --- SCENE TRANSITIONS & ERROR POPUPS ---
-    private void showErrorPopup(String msg) {
-        errorPopupMessage.setText(msg); errorPopupOverlay.setVisible(true);
-        boardGrid.setDisable(true); btnRollDice.setDisable(true); btnPowerup.setDisable(true);
-    }
-
-    @FXML
-    private void hideErrorPopup(ActionEvent event) {
-        errorPopupOverlay.setVisible(false);
-        boardGrid.setDisable(false); btnRollDice.setDisable(false); btnPowerup.setDisable(false);
-    }
     
-    private void triggerGameOver(String name, String role, String color) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/gameOver.fxml"));
-            Parent root = loader.load();
-            GameOverController pc = loader.getController();
-            
-            pc.setGameStats(name, role, game.getPlayer().getEnergy(), game.getOpponent().getEnergy(), color);
-
-            Stage popup = new Stage();
-            popup.initModality(Modality.APPLICATION_MODAL);
-            
-            // 1. CHANGE THIS: Make the Window itself completely transparent
-            popup.initStyle(StageStyle.TRANSPARENT); 
-            
-            // 2. CHANGE THIS: Make the Scene canvas completely transparent
-            Scene scene = new Scene(root);
-            scene.setFill(javafx.scene.paint.Color.TRANSPARENT); 
-            
-            popup.setScene(scene);
-            popup.centerOnScreen();
-            if (backgroundMusicPlayer != null) {
-                backgroundMusicPlayer.stop();
-                System.out.println("Stopping background music for Game Over.");
-            }
-            playWinSound(role);
-            popup.showAndWait(); 
-
-            Stage mainStage = (Stage) boardGrid.getScene().getWindow(); 
-            mainStage.setScene(new Scene(new FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml")).load(), 1024, 768));
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void initCardPile() {
+        cardPileContainer.getChildren().clear();
+        for (int i = 0; i < 25; i++) {
+            Region cardLayer = new Region();
+            cardLayer.setPrefSize(80, 120); 
+            cardLayer.getStyleClass().add("card-pile");
+            cardLayer.setTranslateX(i * 0.15); 
+            cardLayer.setTranslateY(i * -0.15);
+            cardPileContainer.getChildren().add(cardLayer);
         }
     }
-    /**
-     * Plays a specific sound effect based on the winning monster's role.
-     */
-    private void playWinSound(String role) {
-        try {
-            String soundFile = "";
-            
-            // Determine which file to play based on the role
-            if ("Scarer".equalsIgnoreCase(role)) {
-                soundFile = "/resources/music/ScarerWinning.mp3";
-            } else if ("Laugher".equalsIgnoreCase(role)) {
-                soundFile = "/resources/music/laugherWinning.mp3";
-            } else {
-                return; // Exit if the role doesn't match
-            }
 
-            // Locate the file inside the project structure
-            java.net.URL audioUrl = getClass().getResource(soundFile);
-            
-            if (audioUrl != null) {
-                javafx.scene.media.Media media = new javafx.scene.media.Media(audioUrl.toString());
-                javafx.scene.media.MediaPlayer mediaPlayer = new javafx.scene.media.MediaPlayer(media);
-                mediaPlayer.play();
-                System.out.println("Playing victory sound: " + soundFile);
-            } else {
-                System.err.println("ERROR: Could not find sound file at " + soundFile + ". Check your folder structure!");
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to play audio. Ensure javafx.media module is loaded.");
-            e.printStackTrace();
-        }
-    }
-    private void showCardPopup(String title, String effect) {
-        cardTitleLabel.setText(title);
-        cardEffectLabel.setText(effect);
-        
-        cardPopupOverlay.setVisible(true);
-        
-        // Lock the game board so they have to acknowledge the card
-        boardGrid.setDisable(true);
-        btnRollDice.setDisable(true);
-        btnPowerup.setDisable(true);
-    }
-
-    @FXML
-    private void hideCardPopup(ActionEvent event) {
-        cardPopupOverlay.setVisible(false);
-        
-        boardGrid.setDisable(false);
-        btnRollDice.setDisable(false);
-        btnPowerup.setDisable(false);
-    }
-    @FXML
-    private void handleShowRules(javafx.event.ActionEvent event) {
-        try {
-            // 1. Load the rules FXML (Make sure the path matches where you saved it!)
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/popup_rules.fxml"));
-            StackPane rulesPopup = loader.load();
-            
-            // 2. Make sure it completely covers the board
-            rulesPopup.prefWidthProperty().bind(mainRootPane.widthProperty());
-            rulesPopup.prefHeightProperty().bind(mainRootPane.heightProperty());
-            
-            // 3. Add it to the very front of the screen
-            mainRootPane.getChildren().add(rulesPopup);
-            rulesPopup.toFront();
-            
-        } catch (Exception e) {
-            System.err.println("Could not load rules popup!");
-            e.printStackTrace();
-        }
-    }
-    /**
-     * Updates the graphical card pile text display on the screen.
-     */
     private void updateCardPileUI() {
         if (cardPileLabel != null) {
             cardPileLabel.setText("🃏 CARD PILE: " + cardsRemaining + " / 25 LEFT");
-            
-            // Optional styling to make it look prominent:
-            cardPileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
         }
     }
 
-    /**
-     * Decreases the card pile count and handles the automatic rule reshuffle.
-     */
     private void decrementCardPile() {
         cardsRemaining--;
-        System.out.println("A card was drawn. Cards remaining in pile: " + cardsRemaining);
-        
-        // Rule Implementation: When out of cards, reshuffle original cards back into the pile
         if (cardsRemaining <= 0) {
             cardsRemaining = 25; 
             System.out.println("🔄 Deck pile exhausted! Reshuffling all 25 cards back into the pile.");
         }
-        
         updateCardPileUI();
     }
-    /**
-     * Starts the continuous background music for the game board.
-     */
-    private void startBackgroundMusic() {
-        try {
-            // Find the file in your sounds folder
-            java.net.URL audioUrl = getClass().getResource("/resources/music/The Scare Floor.mp3");
-            
-            if (audioUrl != null) {
-                javafx.scene.media.Media media = new javafx.scene.media.Media(audioUrl.toString());
-                backgroundMusicPlayer = new javafx.scene.media.MediaPlayer(media);
-                
-                // Loop the music endlessly
-                backgroundMusicPlayer.setCycleCount(javafx.scene.media.MediaPlayer.INDEFINITE);
-                
-                // Optional: Lower the volume to 30% so sound effects can still be heard
-                backgroundMusicPlayer.setVolume(0.3); 
-                
-                backgroundMusicPlayer.play();
-                System.out.println("Background music started!");
-            } else {
-                System.err.println("Could not find background_music.mp3 in the sounds folder.");
-            }
-        } catch (Exception e) {
-            System.err.println("Failed to load background music.");
-            e.printStackTrace();
+
+    public void removeTopCardFromPile() {
+        if (cardPileContainer.getChildren().getLast() == cardPileContainer.getChildren().getFirst()) {
+        	reshufflePile(); 
         }
+
+        int lastIndex = cardPileContainer.getChildren().size() - 1;
+        Node topCard = cardPileContainer.getChildren().get(lastIndex);
+
+        FadeTransition fade = new FadeTransition(Duration.millis(500), topCard);
+        fade.setToValue(0); 
+        fade.setOnFinished(e -> cardPileContainer.getChildren().remove(topCard));
+        fade.play();
     }
-    public void showCardTransition( String cardDescription) {
+    
+    public void reshufflePile() {
+        initCardPile();
+        cardPileContainer.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), cardPileContainer);
+        fadeIn.setToValue(1);
+        fadeIn.play();
+    }
+    
+    public void animateCardFromPile(String cardDescription) {
+        boardGrid.setDisable(true);
+        btnRollDice.setDisable(true);
+        btnPowerup.setDisable(true);
+
+        Bounds pileBounds = cardPileContainer.localToScene(cardPileContainer.getBoundsInLocal());
+        double pileX = pileBounds.getMinX() + (pileBounds.getWidth() / 2);
+        double pileY = pileBounds.getMinY() + (pileBounds.getHeight() / 2);
+
+        Rectangle flyingCard = new Rectangle(80, 120);
+        flyingCard.setStyle("-fx-fill: #0b61d9; -fx-stroke: white; -fx-stroke-width: 4; -fx-arc-width: 20; -fx-arc-height: 20;");
+        mainRootPane.getChildren().add(flyingCard);
+
+        Bounds rootBounds = mainRootPane.localToScene(mainRootPane.getBoundsInLocal());
+        double centerX = rootBounds.getMinX() + (rootBounds.getWidth() / 2);
+        double centerY = rootBounds.getMinY() + (rootBounds.getHeight() / 2);
+
+        flyingCard.setTranslateX(pileX - centerX);
+        flyingCard.setTranslateY(pileY - centerY);
+        
+        TranslateTransition move = new TranslateTransition(Duration.seconds(0.6), flyingCard);
+        move.setToX(0); 
+        move.setToY(0);
+
+        RotateTransition rotate = new RotateTransition(Duration.seconds(0.6), flyingCard);
+        rotate.setByAngle(360);
+        rotate.setAxis(Rotate.Y_AXIS);
+
+        ScaleTransition scale = new ScaleTransition(Duration.seconds(0.6), flyingCard);
+        scale.setToX(3.5); 
+        scale.setToY(3.5);
+
+        ParallelTransition pt = new ParallelTransition(move, rotate, scale);
+        pt.setOnFinished(e -> {
+            mainRootPane.getChildren().remove(flyingCard);
+            showCardTransition(cardDescription);
+        });
+
+        pt.play();
+    }
+    
+    public void showCardTransition(String cardDescription) {
         // 1. Dark overlay for background focus
         Region darkOverlay = new Region();
-        darkOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+        darkOverlay.getStyleClass().add("card-popup-overlay");
 
         // 2. The Playing Card container (Portrait shape)
         VBox cardBox = new VBox(20);
         cardBox.setAlignment(Pos.CENTER);
-        cardBox.setMaxSize(320, 480); // Portrait aspect ratio
-        cardBox.setStyle(
-            "-fx-background-color: #0b61d9; " + 
-            "-fx-background-radius: 15px; " +
-            "-fx-border-radius: 15px; " +
-            "-fx-border-color: white; " +       // White card stock border
-            "-fx-border-width: 10px; " +        
-            "-fx-padding: 30px 20px; " +
-            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 25, 0, 0, 10);"
-        );
+        cardBox.setMaxSize(320, 480); 
+        cardBox.getStyleClass().add("card-popup-box");
 
         // 3. Text Components
         Label headerLabel = new Label("CARD DRAWN");
-        headerLabel.setStyle("-fx-text-fill: #ffcc00; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Monster AG';");
-
+        headerLabel.getStyleClass().add("card-popup-title");
        
         Label descLabel = new Label(cardDescription);
         descLabel.setWrapText(true);
         descLabel.setTextAlignment(TextAlignment.CENTER);
-        descLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Monster AG'; -fx-line-spacing: 4px;");
+        descLabel.getStyleClass().add("card-popup-effect");
 
         Button okButton = new Button("OK");
-        okButton.setStyle(
-            "-fx-background-color: #ffcc00; -fx-text-fill: white; -fx-font-size: 18px; " +
-            "-fx-font-weight: bold; -fx-background-radius: 20px; -fx-padding: 8px 30px; -fx-cursor: hand;"
-        );
+        okButton.getStyleClass().add("card-popup-button");
 
         // Spacers to push content into a card-like layout
         Region topSpacer = new Region();
@@ -897,7 +647,12 @@ public class BoardController {
         Region bottomSpacer = new Region();
         VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
 
-        okButton.setOnAction(e -> mainRootPane.getChildren().removeAll(darkOverlay, cardBox));
+        okButton.setOnAction(e -> {
+            mainRootPane.getChildren().removeAll(darkOverlay, cardBox);
+            boardGrid.setDisable(false);
+            btnRollDice.setDisable(false);
+            btnPowerup.setDisable(false);
+        });
 
         cardBox.getChildren().addAll(headerLabel, topSpacer, descLabel, bottomSpacer, okButton);
         mainRootPane.getChildren().addAll(darkOverlay, cardBox);
@@ -918,103 +673,173 @@ public class BoardController {
         st.play();
         ft.play();
     }
- // Add this to your BoardController
+
+
+    // ==========================================
+    // 6. POPUPS & UTILITIES
+    // ==========================================
+    private void showErrorPopup(String msg) {
+        errorPopupMessage.setText(msg); 
+        errorPopupOverlay.setVisible(true);
+        boardGrid.setDisable(true); 
+        btnRollDice.setDisable(true); 
+        btnPowerup.setDisable(true);
+    }
+
+    @FXML
+    private void closeActivePopup(ActionEvent event) {
+        if (errorPopupOverlay != null) errorPopupOverlay.setVisible(false);
+        
+        boardGrid.setDisable(false); 
+        btnRollDice.setDisable(false); 
+        btnPowerup.setDisable(false);
+    }
     
-    public void initCardPile() {
-        cardPileContainer.getChildren().clear();
-        
-        // Create 3 stacked card shapes
-        for (int i = 0; i < 25; i++) {
-            Region cardLayer = new Region();
-            cardLayer.setPrefSize(80, 120); // Smaller than the full-sized card
-            cardLayer.getStyleClass().add("card-pile");
+    private void triggerGameOver(String name, String role, String color) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/gameOver.fxml"));
+            Parent root = loader.load();
+            GameOverController pc = loader.getController();
             
-            // Offset each layer slightly to show "stacking"
-            cardLayer.setTranslateX(i * 0.15); 
-            cardLayer.setTranslateY(i * -0.15);
+            pc.setGameStats(name, role, game.getPlayer().getEnergy(), game.getOpponent().getEnergy(), color);
+
+            Stage popup = new Stage();
+            popup.initModality(Modality.APPLICATION_MODAL);
+            popup.initStyle(StageStyle.TRANSPARENT); 
             
-            cardPileContainer.getChildren().add(cardLayer);
+            Scene scene = new Scene(root);
+            scene.setFill(Color.TRANSPARENT); 
+            
+            popup.setScene(scene);
+            popup.centerOnScreen();
+            
+            if (backgroundMusicPlayer != null) {
+                backgroundMusicPlayer.stop();
+            }
+            playWinSound(role);
+            popup.showAndWait(); 
+
+            Stage mainStage = (Stage) boardGrid.getScene().getWindow(); 
+            mainStage.setScene(new Scene(new FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml")).load(), 1024, 768));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    public void removeTopCardFromPile() {
-        // 1. Check if the pile has cards left
-        if (cardPileContainer.getChildren().getLast()==cardPileContainer.getChildren().getFirst()) {
-        	reshufflePile();     // Nothing to remove
+    @FXML
+    private void handleShowRules(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/popup_rules.fxml"));
+            StackPane rulesPopup = loader.load();
+            rulesPopup.prefWidthProperty().bind(mainRootPane.widthProperty());
+            rulesPopup.prefHeightProperty().bind(mainRootPane.heightProperty());
+            mainRootPane.getChildren().add(rulesPopup);
+            rulesPopup.toFront();
+        } catch (Exception e) {
+            System.err.println("Could not load rules popup!");
+            e.printStackTrace();
         }
-
-        // 2. Get the top card (the last one added to the list)
-        int lastIndex = cardPileContainer.getChildren().size() - 1;
-        Node topCard = cardPileContainer.getChildren().get(lastIndex);
-
-        // 3. Create a smooth fade-out animation
-        FadeTransition fade = new FadeTransition(Duration.millis(500), topCard);
-        fade.setToValue(0); // Fade to invisible
-        
-        // 4. Once the animation finishes, remove it from the visual container
-        fade.setOnFinished(e -> {
-            cardPileContainer.getChildren().remove(topCard);
-        });
-
-        fade.play();
     }
-    public void reshufflePile() {
-        // Optional: Add a brief log message or visual effect
-        System.out.println("Cards depleted! Reshuffling the deck...");
-        
-        // Call your existing initialization method to rebuild the 25 cards
-        initCardPile();
-        
-        // Optional: Add a "fade-in" effect for the new deck so it doesn't just pop into existence
-        cardPileContainer.setOpacity(0);
-        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), cardPileContainer);
-        fadeIn.setToValue(1);
-        fadeIn.play();
+
+    private void startBackgroundMusic() {
+        try {
+            URL audioUrl = getClass().getResource("/resources/music/The Scare Floor.mp3");
+            if (audioUrl != null) {
+                Media media = new Media(audioUrl.toString());
+                backgroundMusicPlayer = new MediaPlayer(media);
+                backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+                backgroundMusicPlayer.setVolume(0.3); 
+                backgroundMusicPlayer.play();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-    public void animateCardFromPile(String cardDescription) {
-        // 1. Get the pile's bounds and convert to the mainRootPane's coordinate system
-    	// 1. Get the pile's bounds and convert to the mainRootPane's coordinate system
-    	// 1. Get the exact scene position of the card pile
-        Bounds pileBounds = cardPileContainer.localToScene(cardPileContainer.getBoundsInLocal());
-        double pileX = pileBounds.getMinX() + (pileBounds.getWidth() / 2);
-        double pileY = pileBounds.getMinY() + (pileBounds.getHeight() / 2);
 
-        // 2. Create the "Flying" Card
-        Rectangle flyingCard = new Rectangle(80, 120);
-        flyingCard.setStyle("-fx-fill: #0b61d9; -fx-stroke: white; -fx-stroke-width: 4; -fx-arc-width: 20; -fx-arc-height: 20;");
+    private void playWinSound(String role) {
+        try {
+            String soundFile = "";
+            if ("Scarer".equalsIgnoreCase(role)) {
+                soundFile = "/resources/music/ScarerWinning.mp3";
+            } else if ("Laugher".equalsIgnoreCase(role)) {
+                soundFile = "/resources/music/laugherWinning.mp3";
+            } else {
+                return; 
+            }
 
-        // Add it to the pane FIRST
-        mainRootPane.getChildren().add(flyingCard);
+            URL audioUrl = getClass().getResource(soundFile);
+            if (audioUrl != null) {
+                Media media = new Media(audioUrl.toString());
+                MediaPlayer mediaPlayer = new MediaPlayer(media);
+                mediaPlayer.play();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-        // 3. Find the exact center of the screen
-        Bounds rootBounds = mainRootPane.localToScene(mainRootPane.getBoundsInLocal());
-        double centerX = rootBounds.getMinX() + (rootBounds.getWidth() / 2);
-        double centerY = rootBounds.getMinY() + (rootBounds.getHeight() / 2);
+    private String getMonsterTypeString(Monster m) {
+        if (m instanceof Dasher) return "Dasher";
+        if (m instanceof Dynamo) return "Dynamo";
+        if (m instanceof MultiTasker) return "Multitasker";
+        return "Schemer";
+    }
 
-        // 4. Set start position perfectly over the pile
-        flyingCard.setTranslateX(pileX - centerX);
-        flyingCard.setTranslateY(pileY - centerY);
-        // 4. Create the Animations
-        TranslateTransition move = new TranslateTransition(Duration.seconds(0.6), flyingCard);
-        move.setToX(0); // Center of StackPane
-        move.setToY(0);
-
-        RotateTransition rotate = new RotateTransition(Duration.seconds(0.6), flyingCard);
-        rotate.setByAngle(360);
-        rotate.setAxis(Rotate.Y_AXIS);
-
-        ScaleTransition scale = new ScaleTransition(Duration.seconds(0.6), flyingCard);
-        scale.setToX(3.5); // Adjusted scale to look good
-        scale.setToY(3.5);
-
-        ParallelTransition pt = new ParallelTransition(move, rotate, scale);
+    private String buildStatusString(Monster m) {
+        StringBuilder status = new StringBuilder();
+        if (m.isFrozen()) status.append("❄️ Frozen (1 turn left)\n");
         
-        // Cleanup and trigger the actual card info
-        pt.setOnFinished(e -> {
-            mainRootPane.getChildren().remove(flyingCard);
-            showCardTransition(cardDescription);
-        });
+        if (m.isConfused()) {
+        	int turns = m.getConfusionTurns();
+        	if (turns > 0) status.append("🌀 Confused (").append(turns).append(" left)\n");
+        }
+        
+        if (m.isShielded()) status.append("🛡️ Shielded\n");
+        
+        if (m instanceof Dasher) {
+            int turns = ((Dasher) m).getMomentumTurns();
+            if (turns > 0) status.append("⚡ Momentum Rush (").append(turns).append(" left)\n");
+        }
+        
+        if (m instanceof MultiTasker) {
+            int turns = ((MultiTasker) m).getNormalSpeedTurns();
+            if (turns > 0) status.append("🎯 Focus Mode (").append(turns).append(" left)\n");
+        }
+        
+        return status.length() == 0 ? "Currently, no special effects are applied!" : status.toString();
+    }
 
-        pt.play();
+    private String getMonsterAbilities(Monster m) {
+        if (m instanceof Dynamo) {
+            return "⚡ Powerup: Screech Freeze (Freezes opponent for 1 turn)\n✨ Passive: Doubles all incoming energy changes";
+        } else if (m instanceof Dasher) {
+            return "⚡ Powerup: Momentum Rush (3x speed for 3 turns)\n✨ Passive: Always moves at 2x the dice roll";
+        } else if (m instanceof MultiTasker) {
+            return "⚡ Powerup: Focus Mode (Normal speed for 2 turns)\n✨ Passive: Moves at 1/2 dice roll, +200 to all energy changes";
+        } else if (m instanceof Schemer) {
+            return "⚡ Powerup: Chain Attack (Steals energy from all stationed monsters)\n✨ Passive: Gains +10 bonus to all energy changes";
+        }
+        return "No special abilities.";
+    }
+
+    private String getCardDescription(Card card) {
+        if (card instanceof SwapperCard) {
+            return "Swapper Card!\nIf you are behind, you will swap positions with the opponent!";
+        } else if (card instanceof EnergyStealCard) {
+            return "Energy Steal!\nOpponent's Energy will be transferred to you (unless they have a shield!).";
+        } else if (card instanceof ShieldCard) {
+            return "Shield Card!\nYou will gain a shield against the next negative energy effect, and the opponent's shield will be destroyed if they have one.";
+        } else if (card instanceof StartOverCard) {
+            return "Start Over!\nSomeone will get sent all the way back to Cell 0!";
+        } else if (card instanceof ConfusionCard) {
+            return "Confusion!\nBoth monsters will swap roles! Doors will now have reversed effects.";
+        }
+        return "A mysterious card was drawn!";
+    }
+    private int[] indexToRowCol(int index) {
+        int row = index / Constants.BOARD_COLS;
+        int col = index % Constants.BOARD_COLS;
+        if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
+        return new int[]{row, col};
     }
 }
