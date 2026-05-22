@@ -24,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -167,6 +168,7 @@ public class BoardController {
         int oldOppEnergy = opponent.getEnergy();
 
         try {
+            // 1. The backend engine instantly calculates the turn in memory
             int roll = game.playTurn();
 
             if (roll == 0) {
@@ -174,85 +176,96 @@ public class BoardController {
                 return;
             }
 
-            int newPos = activeMonster.getPosition();
-            int newEnergy = activeMonster.getEnergy();
-            int newOppEnergy = opponent.getEnergy();
-            Card drawnCard = Board.getLastDrawnCard();
+            // 2. Trigger the Cinematic Dice Roll!
+            // Everything inside the { } will wait until the 0.5s animation finishes.
+            animateDiceRoll(roll, () -> {
+                
+                int newPos = activeMonster.getPosition();
+                int newEnergy = activeMonster.getEnergy();
+                int newOppEnergy = opponent.getEnergy();
+                Card drawnCard = Board.getLastDrawnCard();
 
-            int expectedMove = roll; 
-            if (activeMonster instanceof Dasher) { 
-                Dasher m = (Dasher) activeMonster;
-                expectedMove = m.getMomentumTurns() > 0 ? roll * 3 : roll * 2;
-            } else if (activeMonster instanceof MultiTasker) { 
-                MultiTasker m = (MultiTasker) activeMonster;
-                if (m.getNormalSpeedTurns() == 0) {
-                    expectedMove = roll / 2;
+                int expectedMove = roll; 
+                if (activeMonster instanceof Dasher) { 
+                    Dasher m = (Dasher) activeMonster;
+                    expectedMove = m.getMomentumTurns() > 0 ? roll * 3 : roll * 2;
+                } else if (activeMonster instanceof MultiTasker) { 
+                    MultiTasker m = (MultiTasker) activeMonster;
+                    if (m.getNormalSpeedTurns() == 0) expectedMove = roll / 2;
                 }
-            }
-            
-            int expectedPos = (oldPos + expectedMove) % Constants.BOARD_SIZE;
-            int cols = Constants.BOARD_COLS;
-    	    int row = expectedPos / cols;
-    	    int col = expectedPos % cols;
-    	    if (row % 2 == 1) col = cols - 1 - col;
+                
+                int expectedPos = (oldPos + expectedMove) % Constants.BOARD_SIZE;
+                int cols = Constants.BOARD_COLS;
+                int row = expectedPos / cols;
+                int col = expectedPos % cols;
+                if (row % 2 == 1) col = cols - 1 - col;
 
-            Cell landedCell = game.getBoard().getBoardCells()[row][col]; 
-            StringBuilder log = new StringBuilder("🎲 " + activeMonster.getName() + " rolled a " + roll + ". ");
+                Cell landedCell = game.getBoard().getBoardCells()[row][col]; 
+                StringBuilder log = new StringBuilder("🎲 " + activeMonster.getName() + " rolled a " + roll + ". ");
 
-            if (landedCell instanceof CardCell && drawnCard != null) {
-                log.append("🃏 Landed on a Card Cell! Drew a ").append(drawnCard.getName()).append("! ");
-                animateCardFromPile(getCardDescription(drawnCard));
-                removeTopCardFromPile();
-                Board.clearLastDrawnCard();
-                decrementCardPile();
-            } else if (landedCell instanceof ConveyorBelt) {
-                log.append("🚀 Hit a Conveyor Belt! Taken to Cell ").append(newPos).append(". ");
-            } else if (landedCell instanceof ContaminationSock) {
-                log.append("🧦 Hit a Contamination Sock! Taken to Cell ").append(newPos).append(". ");
-            } else if (landedCell instanceof MonsterCell) {
-                log.append("👾 Landed on a Monster Cell! ");
-                if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
-                    log.append("Energies Swapped! ");
+                if (landedCell instanceof CardCell && drawnCard != null) {
+                    log.append("🃏 Landed on a Card Cell! Drew a ").append(drawnCard.getName()).append("! ");
+                    animateCardFromPile(getCardDescription(drawnCard));
+                    removeTopCardFromPile();
+                    Board.clearLastDrawnCard();
+                    decrementCardPile();
+                } else if (landedCell instanceof ConveyorBelt) {
+                    log.append("🚀 Hit a Conveyor Belt! Taken to Cell ").append(newPos).append(". ");
+                } else if (landedCell instanceof ContaminationSock) {
+                    log.append("🧦 Hit a Contamination Sock! Taken to Cell ").append(newPos).append(". ");
+                } else if (landedCell instanceof MonsterCell) {
+                    log.append("👾 Landed on a Monster Cell! ");
+                    if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
+                        log.append("Energies Swapped! ");
+                    }
+                } else if (landedCell instanceof DoorCell) {
+                    log.append("🚪 Landed on a Door! ");
+                } else {
+                    log.append("Landed safely on Cell ").append(newPos).append(". ");
                 }
-            } else if (landedCell instanceof DoorCell) {
-                log.append("🚪 Landed on a Door! ");
-            } else {
-                log.append("Landed safely on Cell ").append(newPos).append(". ");
-            }
 
-            int energyDiff = newEnergy - oldEnergy;
-            if (energyDiff > 0 && !(landedCell instanceof MonsterCell)) {
-                log.append("🔋 Gained ").append(energyDiff).append(" Energy.");
-            } else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
-                log.append("💥 Lost ").append(Math.abs(energyDiff)).append(" Energy.");
-            }
+                int energyDiff = newEnergy - oldEnergy;
+                if (energyDiff > 0 && !(landedCell instanceof MonsterCell)) {
+                    log.append("🔋 Gained ").append(energyDiff).append(" Energy.");
+                } else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
+                    log.append("💥 Lost ").append(Math.abs(energyDiff)).append(" Energy.");
+                }
 
-            gameLogLabel.setText(log.toString().trim());
-            checkWinCondition();                
+                gameLogLabel.setText(log.toString().trim());
+                
+                // Re-enable the dice button for the next turn, refresh UI, and check for a winner!
+                btnRollDice.setDisable(false); 
+                refreshAllUI();
+                checkWinCondition();
+            });
 
         } catch (InvalidMoveException e) {
+            // 3. If they crash, we STILL want to animate the dice roll so they see what they rolled!
             int failedRoll = game.getLastRoll(); 
-            StringBuilder errorLog = new StringBuilder("🚫 " + activeMonster.getName() + " rolled a " + failedRoll + " but crashed! ");
             
-            int currentEnergy = activeMonster.getEnergy();
-            if (currentEnergy < oldEnergy) {
-                errorLog.append("💥 Lost ").append(oldEnergy - currentEnergy).append(" Energy from trap! ");
-            }
-            
-            Card burntCard = Board.getLastDrawnCard();
-            if (burntCard != null) {
-                errorLog.append("🃏 Burnt a ").append(burntCard.getName()).append("! ");
-                Board.clearLastDrawnCard(); 
-            }
+            animateDiceRoll(failedRoll, () -> {
+                StringBuilder errorLog = new StringBuilder("🚫 " + activeMonster.getName() + " rolled a " + failedRoll + " but crashed! ");
+                
+                int currentEnergy = activeMonster.getEnergy();
+                if (currentEnergy < oldEnergy) {
+                    errorLog.append("💥 Lost ").append(oldEnergy - currentEnergy).append(" Energy from trap! ");
+                }
+                
+                Card burntCard = Board.getLastDrawnCard();
+                if (burntCard != null) {
+                    errorLog.append("🃏 Burnt a ").append(burntCard.getName()).append("! ");
+                    Board.clearLastDrawnCard(); 
+                }
 
-            errorLog.append("Roll again.");
-            gameLogLabel.setText(errorLog.toString());
-            showErrorPopup("Invalid Move: " + e.getMessage());
+                errorLog.append("Roll again.");
+                gameLogLabel.setText(errorLog.toString());
+                showErrorPopup("Invalid Move: " + e.getMessage());
+                refreshAllUI();
+            });
             
         } catch (Exception e) {
             showErrorPopup("An error occurred: " + e.getMessage());
-        } finally {
-        	refreshAllUI();
+            btnRollDice.setDisable(false);
         }
     }
 
@@ -296,6 +309,7 @@ public class BoardController {
     // 4. UI UPDATERS (THE MACRO SYSTEM)
     // ==========================================
     private void refreshAllUI() {
+    	updateCardPileUI();
         updateDashboards();
         updateTokenPositions();
         updateDoorVisuals();
@@ -860,5 +874,58 @@ public class BoardController {
         // Play them in sequence!
         SequentialTransition bounce = new SequentialTransition(squash, stretch, settle);
         bounce.play();
+    }
+    private void spawnFloatingText(String text, Color color, int cellIndex) {
+        // 1. Find the physical location of the cell on the screen
+        Bounds cellBounds = cellViews[cellIndex].localToScene(cellViews[cellIndex].getBoundsInLocal());
+        
+        // 2. Create the floating label
+        Label floatingText = new Label(text);
+        floatingText.setStyle("-fx-font-family: 'Monster AG'; -fx-font-size: 24px; -fx-font-weight: bold;");
+        floatingText.setTextFill(color);
+        floatingText.setEffect(new DropShadow(10, Color.BLACK)); // Make it readable anywhere
+
+        // 3. Position it dead center over the cell
+        floatingText.setLayoutX(cellBounds.getMinX() + 10);
+        floatingText.setLayoutY(cellBounds.getMinY() - 10);
+        
+        // Add to the highest layer of your UI (mainRootPane)
+        mainRootPane.getChildren().add(floatingText);
+
+        // 4. Animate it floating UP and fading OUT over 1.5 seconds
+        TranslateTransition floatUp = new TranslateTransition(Duration.seconds(1.5), floatingText);
+        floatUp.setByY(-50); // Move up 50 pixels
+
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1.5), floatingText);
+        fadeOut.setFromValue(1.0);
+        fadeOut.setToValue(0.0);
+
+        ParallelTransition pt = new ParallelTransition(floatUp, fadeOut);
+        
+        // CRITICAL: Delete the label after the animation finishes so it doesn't lag the game
+        pt.setOnFinished(e -> mainRootPane.getChildren().remove(floatingText));
+        pt.play();
+    }
+    private void animateDiceRoll(int finalRoll, Runnable onRollFinished) {
+        btnRollDice.setDisable(true); // Stop double clicking
+        
+        Timeline timeline = new Timeline();
+        // Rapidly change the text every 50 milliseconds
+        for (int i = 0; i < 10; i++) {
+            KeyFrame kf = new KeyFrame(Duration.millis(i * 50), e -> {
+                int randomFace = (int)(Math.random() * 6) + 1;
+                gameLogLabel.setText("🎲 Rolling... " + randomFace);
+            });
+            timeline.getKeyFrames().add(kf);
+        }
+        
+        // The grand finale: show the real roll and run the rest of your turn logic
+        KeyFrame finale = new KeyFrame(Duration.millis(500), e -> {
+            gameLogLabel.setText("🎲 Rolled a " + finalRoll + "!");
+            onRollFinished.run(); // This executes your movement code!
+        });
+        timeline.getKeyFrames().add(finale);
+        
+        timeline.play();
     }
 }
