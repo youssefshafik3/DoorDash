@@ -344,11 +344,13 @@ public class BoardController {
             pTitleLabel.setText("▶ PLAYER\n (YOUR TURN)");
             oTitleLabel.setText("OPPONENT");
             playerDashboard.getStyleClass().add("dashboard-active");
+            pTitleLabel.getStyleClass().add("dashboard-title-active");
             
         } else {
             pTitleLabel.setText("PLAYER");
             oTitleLabel.setText("▶ OPPONENT\n (YOUR TURN)");
             opponentDashboard.getStyleClass().add("dashboard-active");
+            oTitleLabel.getStyleClass().add("dashboard-title-active");
         }
 
         pNameLabel.setText("Name: " + p.getName());
