@@ -19,7 +19,7 @@
                <children>
                   <GridPane fx:id="boardGrid" alignment="CENTER">
             </GridPane>
-                  <Pane fx:id="overlayPane" mouseTransparent="true" prefHeight="200.0" prefWidth="200.0" />
+                  <Pane fx:id="overlayPane" mouseTransparent="true" prefHeight="500.0" prefWidth="500.0" />
                </children>
             </StackPane>
          </center>
@@ -35,6 +35,10 @@
                   <Label fx:id="pEnergyLabel" text="Energy" />
                   <Label fx:id="pPositionLabel" text="Position" />
                   <Label fx:id="pStatusLabel" text="Status" wrapText="true" />
+                          <VBox layoutX="50" layoutY="50" spacing="5">
+    
+    <StackPane fx:id="cardPileContainer" prefHeight="120" prefWidth="80" />
+</VBox>
                </children></VBox>
          </left>
          <right>
@@ -54,13 +58,13 @@
          <bottom>
 <HBox prefHeight="100.0" prefWidth="200.0" spacing="20.0" styleClass="action-bar" BorderPane.alignment="CENTER">
     <children>
-        <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" text="Use PowerUp" />
-        <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" text="Roll Dice" />
-        <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" wrapText="true" />
+        <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" styleClass="game Button" text="Use PowerUp" />
+        <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" styleClass="game Button" text="Roll Dice" />
+                  <Label fx:id="gameLogLabel" text="Label" textFill="#f2ecec" />
         
         <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
         
-        <Button mnemonicParsing="false" onAction="#handleShowRules" text="RULES" />
+        <Button mnemonicParsing="false" onAction="#handleShowRules" styleClass="game Button" text="RULES" />
     </children>
 </HBox>
          </bottom>

@@ -1,7 +1,31 @@
 package game.controller;
-
+import javafx.animation.FadeTransition;
+import javafx.scene.Node;
+import javafx.animation.*;
+import javafx.geometry.Bounds;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import java.util.HashMap;
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ScaleTransition;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
+import javafx.scene.transform.Rotate;
+import javafx.util.Duration;
 import java.util.Map;
+import javafx.animation.*;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
+import javafx.scene.layout.StackPane;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
 import game.engine.Board;
 import game.engine.Constants;
@@ -30,7 +54,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.QuadCurve;
@@ -40,10 +66,21 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-
+import javafx.animation.FadeTransition;
+import javafx.animation.Interpolator;
+import javafx.animation.ScaleTransition;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.TextAlignment;
+import javafx.util.Duration;
 public class BoardController {
     
     // --- FXML INJECTIONS ---
+	
     @FXML private GridPane boardGrid;
     @FXML private Pane overlayPane;
     @FXML private Label pTitleLabel,pNameLabel, pTypeLabel, pOriginalRoleLabel, pCurrentRoleLabel, pEnergyLabel, pPositionLabel, pStatusLabel, pAbilityLabel;
@@ -55,16 +92,22 @@ public class BoardController {
     @FXML private StackPane cardPopupOverlay;
     @FXML private Label cardTitleLabel;
     @FXML private Label cardEffectLabel;
-    @FXML private Pane mainRootPane;
+    @FXML private StackPane mainRootPane;
+    @FXML private VBox playerDashboard;
+    @FXML private StackPane cardPileContainer;
     
     // --- STATE VARIABLES ---
+ // Keeps the music alive so the garbage collector doesn't mute it!
+    private javafx.scene.media.MediaPlayer backgroundMusicPlayer;
     private Game game;
     private Image sockImg, cardImg, conveyorImg;
     private Image[] doorImages;
     private final Map<String, Image> monsterImages = new HashMap<>();
     private StackPane[] cellViews = new StackPane[100]; 
     private ImageView playerToken, opponentToken;
-    
+ // Track the number of cards left in the active drawing pile
+    private int cardsRemaining = 25;
+    private Label cardPileLabel;
     // --- INITIALIZATION ---
     public void initData(Game initializedGame) {
         this.game = initializedGame;
@@ -94,7 +137,7 @@ public class BoardController {
         }
         
         buildGrid();
-        
+        initCardPile();
         playerToken = new ImageView(monsterImages.get(game.getPlayer().getName()));
         opponentToken = new ImageView(monsterImages.get(game.getOpponent().getName()));
 
@@ -111,7 +154,13 @@ public class BoardController {
         updateTokenPositions();
         updateDashboards();
         drawTransportArrows();
-        
+        cardPileLabel = new Label("🃏 CARDS PILE: 25 / 25 LEFT");
+        cardPileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50; -fx-font-size: 16px; -fx-padding: 10px;");
+        cardPileLabel.setWrapText(true);
+        startBackgroundMusic();
+        // 👉 2. ADD IT TO THE DASHBOARD
+        playerDashboard.getChildren().add(cardPileLabel);
+        updateCardPileUI();
         // Wait for the scene to load, then attach the cheat keys
         Platform.runLater(this::setupDebugControls);
     }
@@ -204,8 +253,11 @@ public class BoardController {
             // Check exactly what they stepped on
             if (landedCell instanceof CardCell && drawnCard != null) {
                 log.append("🃏 Landed on a Card Cell! Drew a ").append(drawnCard.getName()).append("! ");
-                showCardPopup("Card Drawn!", getCardDescription(drawnCard));
+                animateCardFromPile(getCardDescription(drawnCard));
+                removeTopCardFromPile();
+
                 Board.clearLastDrawnCard();
+                decrementCardPile();
                 
             } else if (landedCell instanceof ConveyorBelt) {
                 log.append("🚀 Hit a Conveyor Belt! Taken to Cell ").append(newPos).append(". ");
@@ -519,11 +571,11 @@ public class BoardController {
     
     private StackPane createCellView(Cell cell, int index) {
         StackPane stack = new StackPane();
-        stack.setMinSize(60, 60); stack.setMaxSize(60, 60); stack.setPrefSize(60, 60);
+        stack.setMinSize(77, 68); stack.setMaxSize(77, 68); stack.setPrefSize(77, 68);
         stack.getStyleClass().add("grid-cell");
 
         ImageView bgView = new ImageView();
-        bgView.setFitWidth(58); bgView.setFitHeight(58);
+        bgView.setFitWidth(60); bgView.setFitHeight(60);
         boolean addImage = true; 
 
         // 1. FIXED: Removed the duplicate duplicate 'if' statement line here
@@ -664,11 +716,48 @@ public class BoardController {
             
             popup.setScene(scene);
             popup.centerOnScreen();
+            if (backgroundMusicPlayer != null) {
+                backgroundMusicPlayer.stop();
+                System.out.println("Stopping background music for Game Over.");
+            }
+            playWinSound(role);
             popup.showAndWait(); 
 
             Stage mainStage = (Stage) boardGrid.getScene().getWindow(); 
             mainStage.setScene(new Scene(new FXMLLoader(getClass().getResource("/resources/fxml/welcome.fxml")).load(), 1024, 768));
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * Plays a specific sound effect based on the winning monster's role.
+     */
+    private void playWinSound(String role) {
+        try {
+            String soundFile = "";
+            
+            // Determine which file to play based on the role
+            if ("Scarer".equalsIgnoreCase(role)) {
+                soundFile = "/resources/music/ScarerWinning.mp3";
+            } else if ("Laugher".equalsIgnoreCase(role)) {
+                soundFile = "/resources/music/laugherWinning.mp3";
+            } else {
+                return; // Exit if the role doesn't match
+            }
+
+            // Locate the file inside the project structure
+            java.net.URL audioUrl = getClass().getResource(soundFile);
+            
+            if (audioUrl != null) {
+                javafx.scene.media.Media media = new javafx.scene.media.Media(audioUrl.toString());
+                javafx.scene.media.MediaPlayer mediaPlayer = new javafx.scene.media.MediaPlayer(media);
+                mediaPlayer.play();
+                System.out.println("Playing victory sound: " + soundFile);
+            } else {
+                System.err.println("ERROR: Could not find sound file at " + soundFile + ". Check your folder structure!");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to play audio. Ensure javafx.media module is loaded.");
             e.printStackTrace();
         }
     }
@@ -711,5 +800,221 @@ public class BoardController {
             System.err.println("Could not load rules popup!");
             e.printStackTrace();
         }
+    }
+    /**
+     * Updates the graphical card pile text display on the screen.
+     */
+    private void updateCardPileUI() {
+        if (cardPileLabel != null) {
+            cardPileLabel.setText("🃏 CARD PILE: " + cardsRemaining + " / 25 LEFT");
+            
+            // Optional styling to make it look prominent:
+            cardPileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        }
+    }
+
+    /**
+     * Decreases the card pile count and handles the automatic rule reshuffle.
+     */
+    private void decrementCardPile() {
+        cardsRemaining--;
+        System.out.println("A card was drawn. Cards remaining in pile: " + cardsRemaining);
+        
+        // Rule Implementation: When out of cards, reshuffle original cards back into the pile
+        if (cardsRemaining <= 0) {
+            cardsRemaining = 25; 
+            System.out.println("🔄 Deck pile exhausted! Reshuffling all 25 cards back into the pile.");
+        }
+        
+        updateCardPileUI();
+    }
+    /**
+     * Starts the continuous background music for the game board.
+     */
+    private void startBackgroundMusic() {
+        try {
+            // Find the file in your sounds folder
+            java.net.URL audioUrl = getClass().getResource("/resources/music/The Scare Floor.mp3");
+            
+            if (audioUrl != null) {
+                javafx.scene.media.Media media = new javafx.scene.media.Media(audioUrl.toString());
+                backgroundMusicPlayer = new javafx.scene.media.MediaPlayer(media);
+                
+                // Loop the music endlessly
+                backgroundMusicPlayer.setCycleCount(javafx.scene.media.MediaPlayer.INDEFINITE);
+                
+                // Optional: Lower the volume to 30% so sound effects can still be heard
+                backgroundMusicPlayer.setVolume(0.3); 
+                
+                backgroundMusicPlayer.play();
+                System.out.println("Background music started!");
+            } else {
+                System.err.println("Could not find background_music.mp3 in the sounds folder.");
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load background music.");
+            e.printStackTrace();
+        }
+    }
+    public void showCardTransition( String cardDescription) {
+        // 1. Dark overlay for background focus
+        Region darkOverlay = new Region();
+        darkOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.7);");
+
+        // 2. The Playing Card container (Portrait shape)
+        VBox cardBox = new VBox(20);
+        cardBox.setAlignment(Pos.CENTER);
+        cardBox.setMaxSize(320, 480); // Portrait aspect ratio
+        cardBox.setStyle(
+            "-fx-background-color: #0b61d9; " + 
+            "-fx-background-radius: 15px; " +
+            "-fx-border-radius: 15px; " +
+            "-fx-border-color: white; " +       // White card stock border
+            "-fx-border-width: 10px; " +        
+            "-fx-padding: 30px 20px; " +
+            "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 25, 0, 0, 10);"
+        );
+
+        // 3. Text Components
+        Label headerLabel = new Label("CARD DRAWN");
+        headerLabel.setStyle("-fx-text-fill: #ffcc00; -fx-font-size: 20px; -fx-font-weight: bold; -fx-font-family: 'Monster AG';");
+
+       
+        Label descLabel = new Label(cardDescription);
+        descLabel.setWrapText(true);
+        descLabel.setTextAlignment(TextAlignment.CENTER);
+        descLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px; -fx-font-family: 'Monster AG'; -fx-line-spacing: 4px;");
+
+        Button okButton = new Button("OK");
+        okButton.setStyle(
+            "-fx-background-color: #ffcc00; -fx-text-fill: white; -fx-font-size: 18px; " +
+            "-fx-font-weight: bold; -fx-background-radius: 20px; -fx-padding: 8px 30px; -fx-cursor: hand;"
+        );
+
+        // Spacers to push content into a card-like layout
+        Region topSpacer = new Region();
+        VBox.setVgrow(topSpacer, Priority.ALWAYS);
+        Region bottomSpacer = new Region();
+        VBox.setVgrow(bottomSpacer, Priority.ALWAYS);
+
+        okButton.setOnAction(e -> mainRootPane.getChildren().removeAll(darkOverlay, cardBox));
+
+        cardBox.getChildren().addAll(headerLabel, topSpacer, descLabel, bottomSpacer, okButton);
+        mainRootPane.getChildren().addAll(darkOverlay, cardBox);
+
+        // 4. Animations
+        cardBox.setScaleX(0.1);
+        cardBox.setScaleY(0.1);
+        darkOverlay.setOpacity(0);
+
+        ScaleTransition st = new ScaleTransition(Duration.seconds(0.4), cardBox);
+        st.setToX(1.0);
+        st.setToY(1.0);
+        st.setInterpolator(Interpolator.EASE_OUT);
+
+        FadeTransition ft = new FadeTransition(Duration.seconds(0.3), darkOverlay);
+        ft.setToValue(1.0);
+
+        st.play();
+        ft.play();
+    }
+ // Add this to your BoardController
+    
+    public void initCardPile() {
+        cardPileContainer.getChildren().clear();
+        
+        // Create 3 stacked card shapes
+        for (int i = 0; i < 25; i++) {
+            Region cardLayer = new Region();
+            cardLayer.setPrefSize(80, 120); // Smaller than the full-sized card
+            cardLayer.getStyleClass().add("card-pile");
+            
+            // Offset each layer slightly to show "stacking"
+            cardLayer.setTranslateX(i * 0.15); 
+            cardLayer.setTranslateY(i * -0.15);
+            
+            cardPileContainer.getChildren().add(cardLayer);
+        }
+    }
+
+    public void removeTopCardFromPile() {
+        // 1. Check if the pile has cards left
+        if (cardPileContainer.getChildren().getLast()==cardPileContainer.getChildren().getFirst()) {
+        	reshufflePile();     // Nothing to remove
+        }
+
+        // 2. Get the top card (the last one added to the list)
+        int lastIndex = cardPileContainer.getChildren().size() - 1;
+        Node topCard = cardPileContainer.getChildren().get(lastIndex);
+
+        // 3. Create a smooth fade-out animation
+        FadeTransition fade = new FadeTransition(Duration.millis(500), topCard);
+        fade.setToValue(0); // Fade to invisible
+        
+        // 4. Once the animation finishes, remove it from the visual container
+        fade.setOnFinished(e -> {
+            cardPileContainer.getChildren().remove(topCard);
+        });
+
+        fade.play();
+    }
+    public void reshufflePile() {
+        // Optional: Add a brief log message or visual effect
+        System.out.println("Cards depleted! Reshuffling the deck...");
+        
+        // Call your existing initialization method to rebuild the 25 cards
+        initCardPile();
+        
+        // Optional: Add a "fade-in" effect for the new deck so it doesn't just pop into existence
+        cardPileContainer.setOpacity(0);
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(1), cardPileContainer);
+        fadeIn.setToValue(1);
+        fadeIn.play();
+    }
+    public void animateCardFromPile(String cardDescription) {
+        // 1. Get the pile's bounds and convert to the mainRootPane's coordinate system
+    	// 1. Get the pile's bounds and convert to the mainRootPane's coordinate system
+    	// 1. Get the exact scene position of the card pile
+        Bounds pileBounds = cardPileContainer.localToScene(cardPileContainer.getBoundsInLocal());
+        double pileX = pileBounds.getMinX() + (pileBounds.getWidth() / 2);
+        double pileY = pileBounds.getMinY() + (pileBounds.getHeight() / 2);
+
+        // 2. Create the "Flying" Card
+        Rectangle flyingCard = new Rectangle(80, 120);
+        flyingCard.setStyle("-fx-fill: #0b61d9; -fx-stroke: white; -fx-stroke-width: 4; -fx-arc-width: 20; -fx-arc-height: 20;");
+
+        // Add it to the pane FIRST
+        mainRootPane.getChildren().add(flyingCard);
+
+        // 3. Find the exact center of the screen
+        Bounds rootBounds = mainRootPane.localToScene(mainRootPane.getBoundsInLocal());
+        double centerX = rootBounds.getMinX() + (rootBounds.getWidth() / 2);
+        double centerY = rootBounds.getMinY() + (rootBounds.getHeight() / 2);
+
+        // 4. Set start position perfectly over the pile
+        flyingCard.setTranslateX(pileX - centerX);
+        flyingCard.setTranslateY(pileY - centerY);
+        // 4. Create the Animations
+        TranslateTransition move = new TranslateTransition(Duration.seconds(0.6), flyingCard);
+        move.setToX(0); // Center of StackPane
+        move.setToY(0);
+
+        RotateTransition rotate = new RotateTransition(Duration.seconds(0.6), flyingCard);
+        rotate.setByAngle(360);
+        rotate.setAxis(Rotate.Y_AXIS);
+
+        ScaleTransition scale = new ScaleTransition(Duration.seconds(0.6), flyingCard);
+        scale.setToX(3.5); // Adjusted scale to look good
+        scale.setToY(3.5);
+
+        ParallelTransition pt = new ParallelTransition(move, rotate, scale);
+        
+        // Cleanup and trigger the actual card info
+        pt.setOnFinished(e -> {
+            mainRootPane.getChildren().remove(flyingCard);
+            showCardTransition(cardDescription);
+        });
+
+        pt.play();
     }
 }

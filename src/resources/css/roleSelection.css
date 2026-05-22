@@ -13,18 +13,10 @@
 .role-button:hover {
     -fx-scale-x: 1.03;
     -fx-scale-y: 1.03;
+    -fx-cursor: hand;
 }
 
-role-button:hover {
-    -fx-cursor: hand;
-    
-    /* Neon glowing borders on hover */
-    -fx-border-color: #00ffcc; 
-    
-    /* Intense outer glow when hovered */
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 255, 204, 0.6), 15, 0.5, 0, 0);
-}
-/* Specific background for the Scarer button */
+
 #btnScarer {
     -fx-background-image: url("../images/scarerBackground.jpg");
 	-fx-background-size:stretch;
@@ -40,20 +32,28 @@ role-button:hover {
 	-fx-background-repeat: no-repeat;
 	-fx-background-positions: center;
 	
+	
+}
+/* Red glow specifically for the Scarer button */
+#btnScarer:hover {
+    -fx-border-color: #ff0000;
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 0, 0, 0.8), 15, 0.5, 0, 0);
 }
 
-/* Hover effect to indicate the action clearly */
-.role-button:hover {
-    -fx-effect: dropshadow(three-pass-box, rgba(255,255,255,0.6), 20, 0, 0, 0);
-    -fx-cursor: hand;
+/* Green glow specifically for the Laugher button */
+#btnLaugher:hover {
+    -fx-border-color: #00ff00;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 255, 0, 0.8), 15, 0.5, 0, 0);
 }
+/* Hover effect to indicate the action clearly */
+
 /* Styling for the Laugher title label box */
 #lblLaugher {
     -fx-background-color: #0b132b; /* Subtle off-white box */
     -fx-text-fill: #00FF00;                         /* Dark charcoal text */
     -fx-font-weight: bold;
     -fx-font-size: 18px;
-	-fx-font-family: "Gang Bangers";
+	-fx-font-family: "Monster AG";
 	
     
     /* Box padding and smooth edges */
@@ -80,7 +80,7 @@ role-button:hover {
     -fx-border-radius: 10px;
     -fx-border-color: #FF0000;
     -fx-border-width: 1.5px;
-	-fx-font-family: "Gang Bangers";
+	-fx-font-family: "Monster AG";
 	    
     
     /* Eerie neon glow effect around the box */
@@ -94,7 +94,7 @@ role-button:hover {
     -fx-background-position: center;      /* Centers the background image perfectly */
 }
 #titleLabel {
-    -fx-font-family: "Gang Bangers";
+    -fx-font-family: "Monster AG";
     -fx-font-size: 32px;
     -fx-text-fill: white;
 
@@ -110,7 +110,7 @@ role-button:hover {
 }
 
 #vsLabel{
-	-fx-font-family: "Gang Bangers";
+	-fx-font-family: "Monster AG";
 	    -fx-font-size: 40px;
 	    -fx-text-fill: white;
 

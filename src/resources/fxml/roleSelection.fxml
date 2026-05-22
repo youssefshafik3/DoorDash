@@ -24,9 +24,9 @@
             <Font name="Impact" size="24.0" />
          </font>
       </Label>
-      <Label fx:id="vsLabel" alignment="CENTER" layoutX="496.0" layoutY="373.0" prefHeight="29.0" prefWidth="33.0" text="VS" textAlignment="CENTER">
+      <Label fx:id="vsLabel" alignment="CENTER" layoutX="490.0" layoutY="378.0" prefHeight="40.0" prefWidth="50.0" text="VS" textAlignment="CENTER">
          <font>
-            <Font name="Apple LiSung Light" size="24.0" />
+            <Font name="Apple LiSung Light" size="36.0" />
          </font>
       </Label>
    </children>
