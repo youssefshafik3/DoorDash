@@ -18,6 +18,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
+import javafx.scene.CacheHint;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -42,7 +43,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.QuadCurve;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.transform.Rotate;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -250,9 +250,14 @@ public class BoardController {
                 gameLogLabel.setText(log.toString().trim());
                 
                 // Re-enable the dice button for the next turn, refresh UI, and check for a winner!
-                btnRollDice.setDisable(false); 
                 refreshAllUI();
                 checkWinCondition();
+                
+                boolean cardWasDrawn = (landedCell instanceof CardCell && drawnCard != null);
+                if (!cardWasDrawn) {
+                    btnRollDice.setDisable(false); 
+                    btnPowerup.setDisable(false);
+                }
             });
 
         } catch (InvalidMoveException e) {
@@ -503,9 +508,6 @@ public class BoardController {
             stack.getChildren().addAll(bgView, roleLbl, nrgLbl);
             addImage = false; 
         } else {
-            Rectangle bg = new Rectangle(60, 60);
-            bg.getStyleClass().add("normal-cell-bg");
-            stack.getChildren().add(bg);
             addImage = false; 
         }
 
@@ -622,6 +624,10 @@ public class BoardController {
 
         Rectangle flyingCard = new Rectangle(80, 120);
         flyingCard.setStyle("-fx-fill: #0b61d9; -fx-stroke: white; -fx-stroke-width: 4; -fx-arc-width: 20; -fx-arc-height: 20;");
+        
+        flyingCard.setCache(true);
+        flyingCard.setCacheHint(CacheHint.SPEED);
+        
         mainRootPane.getChildren().add(flyingCard);
 
         Bounds rootBounds = mainRootPane.localToScene(mainRootPane.getBoundsInLocal());
@@ -631,25 +637,32 @@ public class BoardController {
         flyingCard.setTranslateX(pileX - centerX);
         flyingCard.setTranslateY(pileY - centerY);
         
-        TranslateTransition move = new TranslateTransition(Duration.seconds(0.6), flyingCard);
+        // 1. THE 250ms RULE & AGGRESSIVE INTERPOLATOR
+        double fastTime = 0.7; 
+        Interpolator snapWhip = Interpolator.SPLINE(0.1, 0.7, 0.1, 1.0); 
+
+        TranslateTransition move = new TranslateTransition(Duration.seconds(fastTime), flyingCard);
         move.setToX(0); 
         move.setToY(0);
+        move.setInterpolator(snapWhip);
 
-        RotateTransition rotate = new RotateTransition(Duration.seconds(0.6), flyingCard);
+        RotateTransition rotate = new RotateTransition(Duration.seconds(fastTime), flyingCard);
         rotate.setByAngle(360);
-        rotate.setAxis(Rotate.Y_AXIS);
+        rotate.setInterpolator(snapWhip);
 
-        ScaleTransition scale = new ScaleTransition(Duration.seconds(0.6), flyingCard);
+        ScaleTransition scale = new ScaleTransition(Duration.seconds(fastTime), flyingCard);
         scale.setToX(3.5); 
         scale.setToY(3.5);
+        scale.setInterpolator(snapWhip);
 
         ParallelTransition pt = new ParallelTransition(move, rotate, scale);
-        pt.setOnFinished(e -> {
-            mainRootPane.getChildren().remove(flyingCard);
-            showCardTransition(cardDescription);
-        });
-
+        pt.setOnFinished(e -> mainRootPane.getChildren().remove(flyingCard));
         pt.play();
+
+        // 2. THE OVERLAP: Trigger the popup right BEFORE the flying card finishes
+        PauseTransition overlapDelay = new PauseTransition(Duration.seconds(fastTime * 0.7));
+        overlapDelay.setOnFinished(e -> showCardTransition(cardDescription));
+        overlapDelay.play();
     }
     
     public void showCardTransition(String cardDescription) {
@@ -691,12 +704,18 @@ public class BoardController {
         cardBox.setScaleY(0.1);
         darkOverlay.setOpacity(0);
 
-        ScaleTransition st = new ScaleTransition(Duration.seconds(0.4), cardBox);
+        cardBox.setCache(true);
+        cardBox.setCacheHint(CacheHint.SPEED);
+
+        // 3. LIGHTNING FAST POPUP (0.15s) WITH SNAP
+        Interpolator snapWhip = Interpolator.SPLINE(0.1, 0.7, 0.1, 1.0);
+        ScaleTransition st = new ScaleTransition(Duration.seconds(0.15), cardBox);
         st.setToX(1.0);
         st.setToY(1.0);
-        st.setInterpolator(Interpolator.EASE_OUT);
+        st.setInterpolator(snapWhip);
+        st.setOnFinished(e -> cardBox.setCache(false));
 
-        FadeTransition ft = new FadeTransition(Duration.seconds(0.3), darkOverlay);
+        FadeTransition ft = new FadeTransition(Duration.seconds(0.15), darkOverlay);
         ft.setToValue(1.0);
 
         st.play();
@@ -709,19 +728,78 @@ public class BoardController {
     // ==========================================
     private void showErrorPopup(String msg) {
         errorPopupMessage.setText(msg); 
-        errorPopupOverlay.setVisible(true);
+        
+        // 1. Lock the board
         boardGrid.setDisable(true); 
         btnRollDice.setDisable(true); 
         btnPowerup.setDisable(true);
+
+        // 2. Prepare the UI elements
+        errorPopupOverlay.setVisible(true);
+        errorPopupOverlay.setOpacity(0); // Hide the dark background initially
+        
+        // We need to grab the actual red VBox inside the StackPane to animate it
+        VBox errorBox = (VBox) errorPopupOverlay.getChildren().get(0);
+        errorBox.setScaleX(0.5); // Start small
+        errorBox.setScaleY(0.5);
+        
+        // Performance cache for smooth scaling
+        errorBox.setCache(true);
+        errorBox.setCacheHint(CacheHint.SPEED);
+
+        // 3. The Animations
+        FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.2), errorPopupOverlay);
+        fadeIn.setToValue(1.0);
+
+        // An aggressive, bouncy spring up
+        ScaleTransition springUp = new ScaleTransition(Duration.seconds(0.3), errorBox);
+        springUp.setToX(1.0);
+        springUp.setToY(1.0);
+        // This Interpolator makes it overshoot 1.0 slightly and bounce back!
+        springUp.setInterpolator(Interpolator.SPLINE(0.1, 0.8, 0.1, 1.0));
+
+        // 4. Play the sequence: Fade -> Spring -> Shake
+        SequentialTransition seq = new SequentialTransition(
+            new ParallelTransition(fadeIn, springUp),
+            new PauseTransition(Duration.millis(50)) // Tiny delay before the shake
+        );
+        
+        seq.setOnFinished(e -> {
+            errorBox.setCache(false);
+            shakeNode(errorBox); // Trigger the wobble once it hits full size!
+        });
+        
+        seq.play();
     }
 
     @FXML
     private void closeActivePopup(ActionEvent event) {
-        if (errorPopupOverlay != null) errorPopupOverlay.setVisible(false);
-        
+        // Unlock the game board immediately
         boardGrid.setDisable(false); 
         btnRollDice.setDisable(false); 
         btnPowerup.setDisable(false);
+
+        // If the error popup is open, animate it closing
+        if (errorPopupOverlay != null && errorPopupOverlay.isVisible()) {
+            VBox errorBox = (VBox) errorPopupOverlay.getChildren().get(0);
+            errorBox.setCache(true);
+            errorBox.setCacheHint(CacheHint.SPEED);
+
+            ScaleTransition shrink = new ScaleTransition(Duration.seconds(0.15), errorBox);
+            shrink.setToX(0.1);
+            shrink.setToY(0.1);
+            shrink.setInterpolator(Interpolator.EASE_IN);
+
+            FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.15), errorPopupOverlay);
+            fadeOut.setToValue(0);
+
+            ParallelTransition pt = new ParallelTransition(shrink, fadeOut);
+            pt.setOnFinished(e -> {
+                errorPopupOverlay.setVisible(false);
+                errorBox.setCache(false);
+            });
+            pt.play();
+        }
     }
     
     private void triggerGameOver(String name, String role, String color) {
@@ -943,5 +1021,25 @@ public class BoardController {
         timeline.getKeyFrames().add(finale);
         
         timeline.play();
+    }
+    private void shakeNode(Node node) {
+        // A rapid, aggressive back-and-forth shake
+        TranslateTransition shake1 = new TranslateTransition(Duration.millis(50), node);
+        shake1.setByX(10);
+        
+        TranslateTransition shake2 = new TranslateTransition(Duration.millis(50), node);
+        shake2.setByX(-20);
+        
+        TranslateTransition shake3 = new TranslateTransition(Duration.millis(50), node);
+        shake3.setByX(20);
+        
+        TranslateTransition shake4 = new TranslateTransition(Duration.millis(50), node);
+        shake4.setByX(-10);
+        
+        TranslateTransition settle = new TranslateTransition(Duration.millis(50), node);
+        settle.setToX(0); // Snap back to true center
+
+        SequentialTransition shakeSeq = new SequentialTransition(shake1, shake2, shake3, shake4, settle);
+        shakeSeq.play();
     }
 }

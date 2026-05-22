@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.net.URL?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.BorderPane?>
@@ -39,7 +40,10 @@
     
     <StackPane fx:id="cardPileContainer" prefHeight="120" prefWidth="80" />
 </VBox>
-               </children></VBox>
+               </children>
+               <BorderPane.margin>
+                  <Insets left="10.0" />
+               </BorderPane.margin></VBox>
          </left>
          <right>
             <VBox fx:id="opponentDashboard" prefHeight="200.0" prefWidth="220.0" spacing="8.0" styleClass="dashboard-vbox" BorderPane.alignment="CENTER">
@@ -66,14 +70,25 @@
         
         <Button mnemonicParsing="false" onAction="#handleShowRules" styleClass="game-button-secondary" text="RULES" />
     </children>
+               <BorderPane.margin>
+                  <Insets left="5.0" />
+               </BorderPane.margin>
+               <padding>
+                  <Insets left="5.0" right="10.0" />
+               </padding>
 </HBox>
          </bottom>
       </BorderPane>
-      <StackPane fx:id="errorPopupOverlay" prefHeight="150.0" prefWidth="200.0" styleClass="error-popup-overlay" visible="false">
+      <StackPane fx:id="errorPopupOverlay" prefHeight="150.0" prefWidth="200.0" styleClass="popup-overlay" visible="false">
          <children>
-            <VBox maxHeight="150.0" maxWidth="300.0" prefHeight="200.0" prefWidth="100.0" styleClass="error-popup-box">
+            <VBox maxHeight="150.0" maxWidth="300.0" prefHeight="200.0" prefWidth="100.0" styleClass="popup-box">
                <children>
-                  <Label fx:id="errorPopupMessage" styleClass="error-popup-message" text="Text" />
+                  <Region VBox.vgrow="ALWAYS" />
+                  
+                  <Label fx:id="errorPopupMessage" styleClass="popup-text" text="Text" textAlignment="CENTER" wrapText="true" />
+                  
+                  <Region VBox.vgrow="ALWAYS" />
+                  
                   <Button mnemonicParsing="false" onAction="#closeActivePopup" styleClass="close-button" text="OK" />
                </children>
             </VBox>

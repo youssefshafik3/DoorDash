@@ -1,186 +1,164 @@
 /* ========================================================
-   BOARD.CSS — DoorDash: Scare vs Laugh Touchdown
-   Theme: Monsters Inc. Factory Floor — Dark Industrial
+   BOARD.CSS — "The Laugh Floor" (Light Mode Theme)
+   Palette: Blue (#588FF6), Cyan (#62C9F8), Purple (#B58DF8), 
+            Green (#5DEB3B), Light Green (#A6F561)
    ======================================================== */
-
-/* --------------------------------------------------------
-   CSS VARIABLES — Single source of truth for all colors
-   -------------------------------------------------------- */
 
 /* --------------------------------------------------------
    DASHBOARDS (Left & Right Player Stats)
    -------------------------------------------------------- */
 .dashboard-vbox {
-    -fx-background-color: #0e1220;
+    -fx-background-color: #ffffff; /* Crisp white background */
     -fx-padding: 16px 12px;
-    -fx-border-color: #252d45;
-    -fx-border-width: 0 1px 0 1px;
-    -fx-spacing: 6px;
+    -fx-border-color: #62C9F8; /* Cyan Border */
+    -fx-border-width: 3px;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    /* Soft, airy drop shadow */
+    -fx-effect: dropshadow(gaussian, rgba(98, 201, 248, 0.3), 15, 0, 0, 5);
+    -fx-margin: 10px;
 }
 
 .dashboard-title {
     -fx-font-family: "Monster AG";
-    -fx-font-size: 18px;
-    -fx-text-fill: #94a3b8;
+    -fx-font-size: 22px;
+    -fx-text-fill: #588FF6; /* Primary Blue */
     -fx-alignment: center;
     -fx-padding: 0 0 8px 0;
-    -fx-border-color: #252d45;
-    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 0 0 2px 0;
 }
 
-/* Active player dashboard — glowing border override */
+/* Active player dashboard — glows green when it's their turn! */
 .dashboard-active {
-    -fx-border-color: #00e5cc;
-    -fx-border-width: 0 2px 0 2px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.25), 20, 0, 0, 0);
+    -fx-border-color: #5DEB3B; 
+    -fx-border-width: 3px;
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 59, 0.5), 20, 0, 0, 0);
 }
 
 .dashboard-title-active {
     -fx-font-family: "Monster AG";
-    -fx-font-size: 18px;
-    -fx-text-fill: #00e5cc;
+    -fx-font-size: 22px;
+    -fx-text-fill: #5DEB3B;
     -fx-alignment: center;
     -fx-padding: 0 0 8px 0;
-    -fx-effect: dropshadow(gaussian, rgba(0, 229, 204, 0.6), 10, 0, 0, 0);
 }
 
 /* Stat rows inside the dashboard */
 .stat-label {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 12px;
-    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #64748b; /* Clean grey */
 }
 
 .stat-value {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 13px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: #e2e8f0;
+    -fx-text-fill: #1e293b; /* Dark text for readability */
 }
 
-/* Energy specifically — gold */
 .stat-energy {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 15px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
-    -fx-text-fill: #f59e0b;
-    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.5), 6, 0, 0, 0);
+    -fx-text-fill: #5DEB3B; /* Bright Green for Energy */
 }
 
-/* Status effects block */
 .stat-status {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 12px;
-    -fx-text-fill: #a78bfa;
+    -fx-font-size: 13px;
+    -fx-text-fill: #B58DF8; /* Purple for Status Effects */
     -fx-font-style: italic;
+    -fx-font-weight: bold;
 }
 
-/* Abilities block */
 .stat-ability {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 11px;
-    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+    -fx-text-fill: #475569;
     -fx-wrap-text: true;
 }
-
-/* Separator line between stat groups */
-.stat-divider {
-    -fx-background-color: #1e2740;
-    -fx-pref-height: 1px;
-    -fx-max-height: 1px;
-}
-
 
 /* --------------------------------------------------------
    BOTTOM ACTION BAR
    -------------------------------------------------------- */
 .action-bar {
-    -fx-background-color: #080b14;
-    -fx-padding: 12px 20px;
-    -fx-border-color: #7c3aed;
-    -fx-border-width: 2px 0 0 0;
-    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.4), 20, 0, 0, -5);
+    -fx-background-color: #ffffff;
+    -fx-padding: 15px 20px;
+    -fx-border-color: #62C9F8; /* Cyan Border */
+    -fx-border-width: 3px 0 0 0;
+    -fx-effect: dropshadow(gaussian, rgba(98, 201, 248, 0.2), 15, 0, 0, -5);
 }
 
 .game-log-label {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 13px;
-    -fx-text-fill: #cbd5e1;
-    -fx-font-style: italic;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1e293b; /* Dark, readable text */
+    -fx-font-weight: bold;
 }
-
 
 /* --------------------------------------------------------
    BUTTONS
    -------------------------------------------------------- */
-
-/* Primary — Roll Dice */
+/* Primary — Roll Dice (Bright Green) */
 .game-button {
-    -fx-background-color: linear-gradient(to bottom, #7c3aed, #5b21b6);
-    -fx-text-fill: white;
+    -fx-background-color: #5DEB3B; 
+    -fx-text-fill: #1e293b; /* Dark text on light green */
     -fx-font-family: "Monster AG";
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
     -fx-padding: 12px 28px;
     -fx-background-radius: 30px;
     -fx-border-radius: 30px;
-    -fx-border-color: rgba(167, 139, 250, 0.4);
-    -fx-border-width: 1px;
+    -fx-border-color: #A6F561; /* Light Green Border */
+    -fx-border-width: 2px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.6), 16, 0, 0, 4);
+    -fx-effect: dropshadow(gaussian, rgba(93, 235, 59, 0.4), 10, 0, 0, 4);
 }
 
 .game-button:hover {
-    -fx-background-color: linear-gradient(to bottom, #8b5cf6, #7c3aed);
-    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.9), 22, 0, 0, 4);
+    -fx-background-color: #A6F561;
     -fx-scale-x: 1.03;
     -fx-scale-y: 1.03;
 }
 
 .game-button:pressed {
-    -fx-background-color: linear-gradient(to bottom, #5b21b6, #4c1d95);
-    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.3), 6, 0, 0, 2);
     -fx-translate-y: 2;
-    -fx-scale-x: 0.98;
-    -fx-scale-y: 0.98;
 }
 
 .game-button:disabled {
-    -fx-background-color: #1e2740;
-    -fx-text-fill: #475569;
+    -fx-background-color: #e2e8f0;
+    -fx-text-fill: #94a3b8;
     -fx-effect: none;
-    -fx-border-color: #252d45;
+    -fx-border-color: #cbd5e1;
 }
 
-/* Secondary — Powerup / Rules */
+/* Secondary — Powerup / Rules (Blue) */
 .game-button-secondary {
-    -fx-background-color: transparent;
-    -fx-text-fill: #a78bfa;
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #588FF6;
     -fx-font-family: "Monster AG";
-    -fx-font-size: 14px;
+    -fx-font-size: 15px;
     -fx-padding: 11px 28px;
     -fx-background-radius: 30px;
     -fx-border-radius: 30px;
-    -fx-border-color: #7c3aed;
+    -fx-border-color: #588FF6;
     -fx-border-width: 2px;
     -fx-cursor: hand;
 }
 
 .game-button-secondary:hover {
-    -fx-background-color: rgba(124, 58, 237, 0.15);
-    -fx-text-fill: #c4b5fd;
-    -fx-effect: dropshadow(gaussian, rgba(124, 58, 237, 0.4), 12, 0, 0, 0);
+    -fx-background-color: #f0f9ff;
+    -fx-text-fill: #62C9F8;
+    -fx-border-color: #62C9F8;
 }
-
-.game-button-secondary:pressed {
-    -fx-background-color: rgba(124, 58, 237, 0.3);
-    -fx-translate-y: 1;
-}
-
 
 /* --------------------------------------------------------
    GAME BOARD GRID
    -------------------------------------------------------- */
 #boardGrid {
+<<<<<<< Updated upstream
     /* 1. The Physical Strap (Border) */
     -fx-border-color: #ffcc00; /* Golden Yellow */
     -fx-border-width: 3px;     /* Nice thick strap */
@@ -192,200 +170,196 @@
 
     /* 3. The Neon Glow Effect */
     -fx-effect: dropshadow(three-pass-box, rgba(255, 204, 0, 0.8), 25, 0.5, 0, 0);
+=======
+    -fx-background-color: #f8fafc; /* Very light grey/blue backdrop */
+    -fx-border-color: #588FF6; /* Primary Blue Frame */
+    -fx-border-width: 4px;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px;
+    -fx-effect: dropshadow(gaussian, rgba(88, 143, 246, 0.3), 20, 0, 0, 10);
+>>>>>>> Stashed changes
 }
 
-/* Individual cells */
 .grid-cell {
+<<<<<<< Updated upstream
     -fx-background-color: #3DD9D9;
     -fx-border-color: #1e2740;
+=======
+    -fx-background-color: #ffffff; /* Failsafe to stop black voids! */
+    -fx-border-color: #e2e8f0;
+>>>>>>> Stashed changes
     -fx-border-width: 1px;
 }
 
 .grid-cell:hover {
+<<<<<<< Updated upstream
     -fx-background-color: #3DD9D9;
     -fx-border-color: #2e3a5c;
+=======
+    -fx-background-color: #f0f9ff;
+    -fx-border-color: #62C9F8; /* Cyan hover effect */
+>>>>>>> Stashed changes
 }
 
-/* Plain cell background shape */
-.normal-cell-bg {
-    -fx-fill: #141927;
-    -fx-stroke: #1e2740;
-    -fx-stroke-width: 1;
-}
-
-/* Cell index number — top left */
 .cell-index-label {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 9px;
+    -fx-font-size: 10px;
     -fx-font-weight: bold;
-    -fx-text-fill: rgba(100, 116, 139, 0.7);
-    -fx-padding: 2px;
+    -fx-text-fill: #94a3b8;
+    -fx-padding: 3px;
+}
+.normal-cell-bg {
+	-fx-fill: #141927;
+	-fx-stroke: #1e2740;
+	-fx-stroke-width: 1;
+
 }
 .monster-cell {
     -fx-effect: dropshadow(three-pass-box, #FFD700, 25, 0.6, 0, 0);
 }
 
-
 /* --------------------------------------------------------
-   CELL TYPE — DOOR CELLS
+   CELL LABELS & TOKENS
    -------------------------------------------------------- */
-.door-role-label {
+.door-role-label, .monster-role-label {
     -fx-font-family: "Monster AG", "Arial", sans-serif;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-size: 12px;
     -fx-text-fill: white;
-    -fx-background-color: rgba(124, 58, 237, 0.85);
-    -fx-padding: 2px 5px;
+    -fx-background-color: #B58DF8; /* Purple Pill */
+    -fx-padding: 2px 6px;
     -fx-background-radius: 4px;
     -fx-translate-x: -2px;
     -fx-translate-y: 2px;
 }
 
-.door-energy-label {
+.door-energy-label, .monster-energy-label {
     -fx-font-family: "Arial", sans-serif;
     -fx-font-weight: bold;
-    -fx-font-size: 11px;
-    -fx-text-fill: #f59e0b;
-    -fx-background-color: rgba(0, 0, 0, 0.75);
-    -fx-padding: 2px 4px;
-    -fx-background-radius: 4px;
-    -fx-translate-y: -2px;
-}
-
-
-/* --------------------------------------------------------
-   CELL TYPE — MONSTER CELLS
-   -------------------------------------------------------- */
-.monster-role-label {
-    -fx-font-family: "Monster AG", "Arial", sans-serif;
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-background-color: rgba(168, 85, 247, 0.85);
+    -fx-font-size: 12px;
+    -fx-text-fill: #1e293b;
+    -fx-background-color: #62C9F8; /* Cyan Pill */
     -fx-padding: 2px 5px;
     -fx-background-radius: 4px;
-    -fx-translate-x: -2px;
-    -fx-translate-y: 2px;
-}
-
-.monster-energy-label {
-    -fx-font-family: "Arial", sans-serif;
-    -fx-font-weight: bold;
-    -fx-font-size: 11px;
-    -fx-text-fill: #f59e0b;
-    -fx-background-color: rgba(0, 0, 0, 0.75);
-    -fx-padding: 2px 4px;
-    -fx-background-radius: 4px;
     -fx-translate-y: -2px;
 }
-
 
 /* --------------------------------------------------------
    PLAYER TOKENS
    -------------------------------------------------------- */
 .player-glow {
-    -fx-effect: dropshadow(gaussian, #00e5cc, 18, 0.7, 0, 0);
+    -fx-effect: dropshadow(gaussian, #5DEB3B, 18, 0.7, 0, 0); /* Green glow */
 }
 
 .opponent-glow {
-    -fx-effect: dropshadow(gaussian, #ef4444, 18, 0.7, 0, 0);
+    -fx-effect: dropshadow(gaussian, #B58DF8, 18, 0.7, 0, 0); /* Purple glow */
 }
 
-
 /* --------------------------------------------------------
-   CARD PILE (Left Dashboard Visual Stack)
+   CARD PILE (Sleek Blue Gradient)
    -------------------------------------------------------- */
 .card-pile {
-    -fx-background-color: linear-gradient(135deg, #1e40af, #1d4ed8);
-    -fx-background-radius: 6px;
-    -fx-border-color: rgba(255, 255, 255, 0.2);
-    -fx-border-width: 1px;
-    -fx-border-radius: 6px;
-    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 6, 0, 2, 2);
+    -fx-background-color: linear-gradient(to bottom right, #62C9F8, #588FF6);
+    -fx-background-radius: 8px;
+    -fx-border-color: #ffffff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 6, 0, 3, 3);
 }
-
 
 /* --------------------------------------------------------
-   ERROR POPUP OVERLAY
+   POPUPS & ERROR OVERLAYS
    -------------------------------------------------------- */
-.error-popup-overlay {
-    -fx-background-color: rgba(8, 11, 20, 0.85);
+.error-popup-overlay, .card-transition-overlay, .popup-overlay {
+    -fx-background-color: rgba(15, 23, 42, 0.7); /* Deep Slate dimming */
 }
 
-.error-popup-box {
-    -fx-background-color: #141927;
+.error-popup-box, .popup-box {
+    -fx-background-color: #ffffff;
     -fx-background-radius: 16px;
-    -fx-border-color: #ef4444;
-    -fx-border-width: 2px;
+    -fx-border-color: #ef4444; /* Error Red */
+    -fx-border-width: 3px;
     -fx-border-radius: 16px;
     -fx-padding: 30px;
-    -fx-effect: dropshadow(gaussian, rgba(239, 68, 68, 0.4), 30, 0, 0, 0);
+    -fx-alignment: center; 
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 30, 0, 0, 10);
 }
 
 .error-popup-title {
     -fx-font-family: "Monster AG";
-    -fx-font-size: 20px;
+    -fx-font-size: 22px;
     -fx-text-fill: #ef4444;
 }
 
-.error-popup-message {
+.error-popup-message, .popup-text {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 14px;
-    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 15px;
+    -fx-text-fill: #1e293b;
     -fx-wrap-text: true;
     -fx-text-alignment: center;
 }
 
-
-/* --------------------------------------------------------
-   CARD POPUP OVERLAY (Card Drawn)
-   -------------------------------------------------------- */
-.card-transition-overlay {
-    -fx-background-color: rgba(8, 11, 20, 0.85);
+.close-button {
+    -fx-background-color: #ef4444;
+    -fx-text-fill: white;
+    -fx-font-family: "Monster AG";
+    -fx-font-size: 16px;
+    -fx-padding: 8px 30px;
+    -fx-background-radius: 20px;
+    -fx-cursor: hand;
+    -fx-margin-top: 15px; 
 }
 
+/* --------------------------------------------------------
+   CARD TRANSITION POPUP (Drawn Card)
+   -------------------------------------------------------- */
 .card-transition-box {
-    -fx-background-color: linear-gradient(160deg, #0b61d9, #1d4ed8, #0b61d9);
+    -fx-background-color: #588FF6; /* Primary Blue Base */
     -fx-background-radius: 16px;
-    -fx-border-color: rgba(255, 255, 255, 0.3);
-    -fx-border-width: 3px;
+    -fx-border-color: #62C9F8; /* Cyan Border */
+    -fx-border-width: 6px;
     -fx-border-radius: 16px;
     -fx-padding: 30px 24px;
-    -fx-effect: dropshadow(gaussian, rgba(11, 97, 217, 0.7), 40, 0, 0, 0);
+    -fx-alignment: center; 
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.4), 30, 0, 0, 10);
 }
 
 .card-transition-title {
     -fx-font-family: "Monster AG";
-    -fx-font-size: 22px;
-    -fx-text-fill: #f59e0b;
-    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.5), 8, 0, 0, 0);
+    -fx-font-size: 26px;
+    -fx-text-fill: #A6F561; /* Light Green */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 3, 0, 1, 1);
     -fx-text-alignment: center;
 }
 
-.card-transition-effect {
+.card-transition-effect, .card-transition-desc {
     -fx-font-family: "Arial", sans-serif;
-    -fx-font-size: 15px;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-wrap-text: true;
     -fx-text-alignment: center;
-    -fx-line-spacing: 4;
+    -fx-line-spacing: 5;
 }
 
 .card-transition-button {
-    -fx-background-color: #f59e0b;
-    -fx-text-fill: #080b14;
+    -fx-background-color: #5DEB3B; /* Bright Green */
+    -fx-text-fill: #1e293b; 
     -fx-font-family: "Monster AG";
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-background-radius: 25px;
-    -fx-padding: 10px 36px;
+    -fx-padding: 10px 40px;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.5), 12, 0, 0, 3);
+    -fx-border-color: #A6F561;
+    -fx-border-width: 2px;
+    -fx-border-radius: 25px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 5, 0, 2, 2);
 }
 
 .card-transition-button:hover {
-    -fx-background-color: #fbbf24;
-    -fx-effect: dropshadow(gaussian, rgba(245, 158, 11, 0.8), 18, 0, 0, 3);
+    -fx-background-color: #A6F561;
+    -fx-effect: dropshadow(gaussian, rgba(181, 141, 248, 0.8), 15, 0, 0, 0); /* Purple Hover Glow! */
     -fx-scale-x: 1.05;
     -fx-scale-y: 1.05;
 }
