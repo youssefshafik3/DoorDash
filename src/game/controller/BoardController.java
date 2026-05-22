@@ -215,20 +215,36 @@ public class BoardController {
                     log.append("🧦 Hit a Contamination Sock! Taken to Cell ").append(newPos).append(". ");
                 } else if (landedCell instanceof MonsterCell) {
                     log.append("👾 Landed on a Monster Cell! ");
-                    if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
-                        log.append("Energies Swapped! ");
-                    }
+                    // Let the block below handle the text spawning for the swap
                 } else if (landedCell instanceof DoorCell) {
                     log.append("🚪 Landed on a Door! ");
                 } else {
                     log.append("Landed safely on Cell ").append(newPos).append(". ");
                 }
 
+                // --- ENERGY DIFFERENCES & FLOATING TEXT ---
                 int energyDiff = newEnergy - oldEnergy;
+                
+                // ACTION: Energy Gained (Doors)
                 if (energyDiff > 0 && !(landedCell instanceof MonsterCell)) {
                     log.append("🔋 Gained ").append(energyDiff).append(" Energy.");
-                } else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
+                    spawnFloatingText("+" + energyDiff + " ⚡", Color.valueOf("#5DEB3B"), newPos); 
+                } 
+                // ACTION: Energy Lost (Socks, Mismatched Doors)
+                else if (energyDiff < 0 && !(landedCell instanceof MonsterCell)) {
                     log.append("💥 Lost ").append(Math.abs(energyDiff)).append(" Energy.");
+                    spawnFloatingText(energyDiff + " 💥", Color.valueOf("#ef4444"), newPos); 
+                } 
+                // ACTION: Monster Cell Swap
+                else if (landedCell instanceof MonsterCell) {
+                    if (drawnCard == null && (newEnergy != oldEnergy || newOppEnergy != oldOppEnergy)) {
+                        log.append("Energies Swapped! ");
+                        spawnFloatingText("SWAP! 🔄", Color.valueOf("#B58DF8"), newPos);
+                    }
+                }
+                // ACTION: Conveyor Belt Teleport
+                else if (landedCell instanceof ConveyorBelt) {
+                    spawnFloatingText("SWOOSH! 🚀", Color.valueOf("#62C9F8"), newPos);
                 }
 
                 gameLogLabel.setText(log.toString().trim());
@@ -881,28 +897,26 @@ public class BoardController {
         
         // 2. Create the floating label
         Label floatingText = new Label(text);
-        floatingText.setStyle("-fx-font-family: 'Monster AG'; -fx-font-size: 24px; -fx-font-weight: bold;");
+        floatingText.setStyle("-fx-font-family: 'Monster AG'; -fx-font-size: 50px; -fx-font-weight: bold;");
         floatingText.setTextFill(color);
-        floatingText.setEffect(new DropShadow(10, Color.BLACK)); // Make it readable anywhere
+        floatingText.setEffect(new DropShadow(10, Color.BLACK)); 
 
         // 3. Position it dead center over the cell
-        floatingText.setLayoutX(cellBounds.getMinX() + 10);
+        floatingText.setLayoutX(cellBounds.getMinX() + 15);
         floatingText.setLayoutY(cellBounds.getMinY() - 10);
         
-        // Add to the highest layer of your UI (mainRootPane)
         mainRootPane.getChildren().add(floatingText);
 
-        // 4. Animate it floating UP and fading OUT over 1.5 seconds
-        TranslateTransition floatUp = new TranslateTransition(Duration.seconds(1.5), floatingText);
-        floatUp.setByY(-50); // Move up 50 pixels
+        // 4. ANIMATION UPDATE: Slower drift (2.5 seconds) and higher float path (-80 pixels)
+        TranslateTransition floatUp = new TranslateTransition(Duration.seconds(2.5), floatingText);
+        floatUp.setByY(-80); 
 
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(1.5), floatingText);
+        // Slower fade out to match the movement
+        FadeTransition fadeOut = new FadeTransition(Duration.seconds(2.5), floatingText);
         fadeOut.setFromValue(1.0);
         fadeOut.setToValue(0.0);
 
         ParallelTransition pt = new ParallelTransition(floatUp, fadeOut);
-        
-        // CRITICAL: Delete the label after the animation finishes so it doesn't lag the game
         pt.setOnFinished(e -> mainRootPane.getChildren().remove(floatingText));
         pt.play();
     }
