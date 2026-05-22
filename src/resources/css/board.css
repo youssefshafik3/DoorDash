@@ -158,19 +158,6 @@
    GAME BOARD GRID
    -------------------------------------------------------- */
 #boardGrid {
-<<<<<<< Updated upstream
-    /* 1. The Physical Strap (Border) */
-    -fx-border-color: #ffcc00; /* Golden Yellow */
-    -fx-border-width: 3px;     /* Nice thick strap */
-    -fx-border-style: solid;
-    -fx-border-radius: 0px;   /* Rounded corners for a modern look */
-    
-    /* 2. Padding so the border doesn't touch your cells */
-    -fx-padding: 5px;          
-
-    /* 3. The Neon Glow Effect */
-    -fx-effect: dropshadow(three-pass-box, rgba(255, 204, 0, 0.8), 25, 0.5, 0, 0);
-=======
     -fx-background-color: #f8fafc; /* Very light grey/blue backdrop */
     -fx-border-color: #588FF6; /* Primary Blue Frame */
     -fx-border-width: 4px;
@@ -178,28 +165,17 @@
     -fx-background-radius: 8px;
     -fx-padding: 6px;
     -fx-effect: dropshadow(gaussian, rgba(88, 143, 246, 0.3), 20, 0, 0, 10);
->>>>>>> Stashed changes
 }
 
 .grid-cell {
-<<<<<<< Updated upstream
-    -fx-background-color: #3DD9D9;
-    -fx-border-color: #1e2740;
-=======
     -fx-background-color: #ffffff; /* Failsafe to stop black voids! */
     -fx-border-color: #e2e8f0;
->>>>>>> Stashed changes
     -fx-border-width: 1px;
 }
 
 .grid-cell:hover {
-<<<<<<< Updated upstream
-    -fx-background-color: #3DD9D9;
-    -fx-border-color: #2e3a5c;
-=======
     -fx-background-color: #f0f9ff;
     -fx-border-color: #62C9F8; /* Cyan hover effect */
->>>>>>> Stashed changes
 }
 
 .cell-index-label {
@@ -214,9 +190,6 @@
 	-fx-stroke: #1e2740;
 	-fx-stroke-width: 1;
 
-}
-.monster-cell {
-    -fx-effect: dropshadow(three-pass-box, #FFD700, 25, 0.6, 0, 0);
 }
 
 /* --------------------------------------------------------
