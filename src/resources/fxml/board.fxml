@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<StackPane fx:id="mainRootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.controller.BoardController">
+<StackPane fx:id="mainRootPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="game.controller.BoardController">
    <children>
       <BorderPane prefHeight="200.0" prefWidth="200.0">
          <center>
@@ -60,7 +60,7 @@
     <children>
         <Button fx:id="btnPowerup" mnemonicParsing="false" onAction="#handleUsePowerup" styleClass="game-button-secondary" text="Use PowerUp" />
         <Button fx:id="btnRollDice" mnemonicParsing="false" onAction="#handleRollDice" styleClass="game-button" text="Roll Dice" />
-                  <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" textFill="#f2ecec" />
+                  <Label fx:id="gameLogLabel" styleClass="game-log-label" text="Label" textFill="#f2ecec" wrapText="true" />
         
         <javafx.scene.layout.Region HBox.hgrow="ALWAYS" />
         

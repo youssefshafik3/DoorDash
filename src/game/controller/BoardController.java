@@ -359,6 +359,8 @@ public class BoardController {
 
         cellViews[pPos].getChildren().add(playerToken);
         cellViews[oPos].getChildren().add(opponentToken);
+        animateTokenLanding(playerToken);
+        animateTokenLanding(opponentToken);
         playerToken.toFront(); opponentToken.toFront();
     }
 
@@ -836,5 +838,27 @@ public class BoardController {
         int col = index % Constants.BOARD_COLS;
         if (row % 2 == 1) col = Constants.BOARD_COLS - 1 - col;
         return new int[]{row, col};
+    }
+    private void animateTokenLanding(ImageView token) {
+        // Step 1: Shrink slightly and squash down (the impact)
+        ScaleTransition squash = new ScaleTransition(Duration.millis(150), token);
+        squash.setToX(1.3); // Get wider
+        squash.setToY(0.7); // Get shorter
+        squash.setInterpolator(Interpolator.EASE_OUT);
+
+        // Step 2: Spring back up (the rebound)
+        ScaleTransition stretch = new ScaleTransition(Duration.millis(150), token);
+        stretch.setToX(0.9);
+        stretch.setToY(1.1);
+        stretch.setInterpolator(Interpolator.EASE_IN);
+
+        // Step 3: Settle back to normal size
+        ScaleTransition settle = new ScaleTransition(Duration.millis(100), token);
+        settle.setToX(1.0);
+        settle.setToY(1.0);
+
+        // Play them in sequence!
+        SequentialTransition bounce = new SequentialTransition(squash, stretch, settle);
+        bounce.play();
     }
 }
