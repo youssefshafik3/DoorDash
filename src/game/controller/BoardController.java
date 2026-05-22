@@ -619,29 +619,25 @@ public class BoardController {
     }
     
     public void showCardTransition(String cardDescription) {
-        // 1. Dark overlay for background focus
         Region darkOverlay = new Region();
-        darkOverlay.getStyleClass().add("card-popup-overlay");
+        darkOverlay.getStyleClass().add("card-transition-overlay");
 
-        // 2. The Playing Card container (Portrait shape)
         VBox cardBox = new VBox(20);
         cardBox.setAlignment(Pos.CENTER);
         cardBox.setMaxSize(320, 480); 
-        cardBox.getStyleClass().add("card-popup-box");
+        cardBox.getStyleClass().add("card-transition-box");
 
-        // 3. Text Components
         Label headerLabel = new Label("CARD DRAWN");
-        headerLabel.getStyleClass().add("card-popup-title");
-       
+        headerLabel.getStyleClass().add("card-transition-title");
+
         Label descLabel = new Label(cardDescription);
         descLabel.setWrapText(true);
         descLabel.setTextAlignment(TextAlignment.CENTER);
-        descLabel.getStyleClass().add("card-popup-effect");
+        descLabel.getStyleClass().add("card-transition-desc");
 
         Button okButton = new Button("OK");
-        okButton.getStyleClass().add("card-popup-button");
+        okButton.getStyleClass().add("card-transition-button");
 
-        // Spacers to push content into a card-like layout
         Region topSpacer = new Region();
         VBox.setVgrow(topSpacer, Priority.ALWAYS);
         Region bottomSpacer = new Region();
@@ -657,7 +653,6 @@ public class BoardController {
         cardBox.getChildren().addAll(headerLabel, topSpacer, descLabel, bottomSpacer, okButton);
         mainRootPane.getChildren().addAll(darkOverlay, cardBox);
 
-        // 4. Animations
         cardBox.setScaleX(0.1);
         cardBox.setScaleY(0.1);
         darkOverlay.setOpacity(0);
